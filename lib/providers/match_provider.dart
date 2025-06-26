@@ -68,10 +68,10 @@ class MatchProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updateMatchScore(int matchId, int team1Score, int team2Score) async {
+  Future<Match> updateMatchScore(int matchId, int team1Score, int team2Score) async {
     try {
       final matchIndex = _matches.indexWhere((m) => m.id == matchId);
-      if (matchIndex == -1) return;
+      if (matchIndex == -1) throw Exception('Match not found');
       
       final match = _matches[matchIndex];
       final updatedMatch = match.copyWith(
@@ -95,16 +95,18 @@ class MatchProvider with ChangeNotifier {
       }
       
       notifyListeners();
+      
+      return updatedMatch;
     } catch (e) {
       print('Error updating match score: $e');
       rethrow;
     }
   }
 
-  Future<void> completeMatch(int matchId) async {
+  Future<Match> completeMatch(int matchId) async {
     try {
       final matchIndex = _matches.indexWhere((m) => m.id == matchId);
-      if (matchIndex == -1) return;
+      if (matchIndex == -1) throw Exception('Match not found');
       
       final match = _matches[matchIndex];
       final updatedMatch = match.copyWith(
@@ -127,6 +129,8 @@ class MatchProvider with ChangeNotifier {
       }
       
       notifyListeners();
+      
+      return updatedMatch;
     } catch (e) {
       print('Error completing match: $e');
       rethrow;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/match.dart';
 import '../models/member.dart';
@@ -10,17 +11,36 @@ class GlobalMatchProvider with ChangeNotifier {
   bool _isLoading = false;
   bool _showCompletedOnly = false;
   
+  // Stream subscription for real-time updates
+  Stream<List<Match>>? _matchesStream;
+  StreamSubscription<List<Match>>? _matchesSubscription;
+  
   // Cache for team members
   final Map<int, List<Member>> _teamMembersCache = {};
 
   List<Match> get allMatches => _allMatches;
   bool get isLoading => _isLoading;
   bool get showCompletedOnly => _showCompletedOnly;
+  
+  // Constructor to initialize the stream
+  GlobalMatchProvider() {
+    _setupMatchesStream();
+  }
+  
+  // Dispose method to clean up resources
+  @override
+  void dispose() {
+    _cancelMatchesSubscription();
+    super.dispose();
+  }
 
   // Toggle between showing all matches or completed matches only
   void toggleCompletedOnly() {
     _showCompletedOnly = !_showCompletedOnly;
-    fetchAllMatches();
+    // Cancel existing subscription
+    _cancelMatchesSubscription();
+    // Set up new stream with updated filter
+    _setupMatchesStream();
   }
   
   // Fetch team members for a specific team
@@ -41,13 +61,51 @@ class GlobalMatchProvider with ChangeNotifier {
     }
   }
 
-  // Fetch all matches from Firebase
+  // Set up real-time stream for matches
+  void _setupMatchesStream() {
+    _isLoading = true;
+    notifyListeners();
+    
+    // Get the stream from FirebaseService
+    _matchesStream = _firebaseService.matchesStream(completedOnly: _showCompletedOnly);
+    
+    // Subscribe to the stream
+    _matchesSubscription = _matchesStream?.listen((matches) {
+      _allMatches = matches;
+      
+      // Sort matches by scheduledDate (most recent first)
+      _allMatches.sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
+      
+      _isLoading = false;
+      notifyListeners();
+    }, onError: (error) {
+      print('Error in matches stream: $error');
+      _isLoading = false;
+      notifyListeners();
+    });
+  }
+  
+  // Cancel the stream subscription
+  void _cancelMatchesSubscription() {
+    _matchesSubscription?.cancel();
+    _matchesSubscription = null;
+    _matchesStream = null;
+  }
+  
+  // Fetch all matches from Firebase (one-time fetch, used as fallback)
   Future<void> fetchAllMatches() async {
+    // If we're already using a stream, no need to fetch
+    if (_matchesSubscription != null) return;
+    
     _isLoading = true;
     notifyListeners();
     
     try {
       _allMatches = await _firebaseService.getAllMatches(completedOnly: _showCompletedOnly);
+      
+      // Sort matches by scheduledDate (most recent first)
+      _allMatches.sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
+      
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -70,6 +128,10 @@ class GlobalMatchProvider with ChangeNotifier {
       print('DEBUG: GlobalMatchProvider - Received ${matches.length} inter-group matches');
       
       _allMatches = matches;
+      
+      // Sort matches by scheduledDate (most recent first)
+      _allMatches.sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
+      
       print('DEBUG: GlobalMatchProvider - Updated _allMatches, now has ${_allMatches.length} items');
       
       _isLoading = false;
@@ -191,5 +253,24 @@ class GlobalMatchProvider with ChangeNotifier {
       match.team2GroupId != null && 
       match.team1GroupId != match.team2GroupId
     ).toList();
+  }
+
+  // Update a match
+  Future<void> updateMatch(Match updatedMatch) async {
+    try {
+      // Update in Firebase
+      await _firebaseService.updateMatch(updatedMatch);
+      
+      // With real-time updates, the stream will automatically update the UI
+      // But we still update the local state for immediate feedback
+      final matchIndex = _allMatches.indexWhere((m) => m.id == updatedMatch.id);
+      if (matchIndex != -1) {
+        _allMatches[matchIndex] = updatedMatch;
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error updating match: $e');
+      rethrow;
+    }
   }
 }

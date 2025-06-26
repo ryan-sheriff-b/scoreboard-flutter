@@ -229,7 +229,7 @@ class _MembersScreenState extends State<MembersScreen> {
                       Text('Role: ${member.role}'),
                       const SizedBox(height: 4),
                       Text(
-                        'Added: ${DateFormat('MMM dd, yyyy').format(member.createdAt)}',
+                        'Added: ${DateFormat('dd/MM/yyyy').format(member.createdAt)}',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],

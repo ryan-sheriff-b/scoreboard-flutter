@@ -284,7 +284,7 @@ class _TeamScoresScreenState extends State<TeamScoresScreen> {
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               subtitle: Text(
-                                'Added: ${DateFormat('MMM dd, yyyy').format(score.createdAt)}',
+                                'Added: ${DateFormat('dd/MM/yyyy').format(score.createdAt)}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey[600],

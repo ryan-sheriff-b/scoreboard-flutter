@@ -335,7 +335,7 @@ class _InterGroupMatchesListScreenState extends State<InterGroupMatchesListScree
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            DateFormat('yyyy-MM-dd').format(match.scheduledDate),
+                            DateFormat('dd/MM/yyyy hh:mm a').format(match.scheduledDate),
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                           const Spacer(),

@@ -88,16 +88,69 @@ class _MatchesScreenState extends State<MatchesScreen> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    // First, select the date
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: _scheduledDate,
-      firstDate: DateTime.now(),
+      firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      helpText: 'SELECT MATCH DATE',
+      confirmText: 'NEXT: SELECT TIME',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            datePickerTheme: DatePickerThemeData(
+              headerHelpStyle: const TextStyle(fontSize: 16),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
-    if (picked != null && picked != _scheduledDate) {
-      setState(() {
-        _scheduledDate = picked;
-      });
+    
+    if (pickedDate != null) {
+      // Then, select the time
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_scheduledDate),
+        helpText: 'SELECT MATCH TIME',
+        confirmText: 'CONFIRM',
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              timePickerTheme: TimePickerThemeData(
+                helpTextStyle: const TextStyle(fontSize: 16),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+      
+      if (pickedTime != null) {
+        // Combine date and time
+        setState(() {
+          _scheduledDate = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      } else {
+        // User selected date but canceled time selection
+        // Still update the date but keep the original time
+        setState(() {
+          _scheduledDate = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            _scheduledDate.hour,
+            _scheduledDate.minute,
+          );
+        });
+      }
     }
   }
 
@@ -111,15 +164,19 @@ class _MatchesScreenState extends State<MatchesScreen> {
       }
       
       try {
+        // Use the current scheduled date
         final match = Match(
+          id: null,
           groupId: widget.group.id!,
           team1Id: _selectedTeam1!.id!,
           team2Id: _selectedTeam2!.id!,
+          team1Score: 0,
+          team2Score: 0,
           team1Name: _selectedTeam1!.name,
           team2Name: _selectedTeam2!.name,
           status: 'scheduled',
           matchType: _selectedMatchType,
-          scheduledDate: _scheduledDate,
+          scheduledDate: _scheduledDate, // Use _scheduledDate which is updated in the dialog
           createdAt: DateTime.now(),
         );
         
@@ -147,103 +204,181 @@ class _MatchesScreenState extends State<MatchesScreen> {
   }
 
   void _showCreateMatchDialog() {
+    // Create a local copy of the scheduled date for the dialog
+    DateTime dialogScheduledDate = _scheduledDate;
+    
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Create New Match'),
-        content: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<Team>(
-                  decoration: const InputDecoration(labelText: 'Team 1'),
-                  value: _selectedTeam1,
-                  items: _teams.map((team) {
-                    return DropdownMenuItem<Team>(
-                      value: team,
-                      child: Text(team.name),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedTeam1 = value;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null) {
-                      return 'Please select Team 1';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<Team>(
-                  decoration: const InputDecoration(labelText: 'Team 2'),
-                  value: _selectedTeam2,
-                  items: _teams.map((team) {
-                    return DropdownMenuItem<Team>(
-                      value: team,
-                      child: Text(team.name),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedTeam2 = value;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null) {
-                      return 'Please select Team 2';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(labelText: 'Match Type'),
-                  value: _selectedMatchType,
-                  items: _matchTypes.map((type) {
-                    return DropdownMenuItem<String>(
-                      value: type['value'],
-                      child: Text(type['label']),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedMatchType = value!;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                Row(
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('Create New Match'),
+            content: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: Text(
-                        'Scheduled Date: ${DateFormat('yyyy-MM-dd').format(_scheduledDate)}',
-                      ),
+                    DropdownButtonFormField<Team>(
+                      decoration: const InputDecoration(labelText: 'Team 1'),
+                      value: _selectedTeam1,
+                      items: _teams.map((team) {
+                        return DropdownMenuItem<Team>(
+                          value: team,
+                          child: Text(team.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedTeam1 = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Please select Team 1';
+                        }
+                        return null;
+                      },
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.calendar_today),
-                      onPressed: () => _selectDate(context),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<Team>(
+                      decoration: const InputDecoration(labelText: 'Team 2'),
+                      value: _selectedTeam2,
+                      items: _teams.map((team) {
+                        return DropdownMenuItem<Team>(
+                          value: team,
+                          child: Text(team.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedTeam2 = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Please select Team 2';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(labelText: 'Match Type'),
+                      value: _selectedMatchType,
+                      items: _matchTypes.map((type) {
+                        return DropdownMenuItem<String>(
+                          value: type['value'],
+                          child: Text(type['label']),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedMatchType = value!;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Scheduled Date & Time', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        InkWell(
+                          onTap: () async {
+                            // First, select the date
+                            final DateTime? pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: dialogScheduledDate,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                              helpText: 'SELECT MATCH DATE',
+                              confirmText: 'NEXT: SELECT TIME',
+                              builder: (context, child) {
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                    datePickerTheme: DatePickerThemeData(
+                                      headerHelpStyle: const TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+                            
+                            if (pickedDate != null) {
+                              // Then, select the time
+                              final TimeOfDay? pickedTime = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.fromDateTime(dialogScheduledDate),
+                                helpText: 'SELECT MATCH TIME',
+                                confirmText: 'CONFIRM',
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      timePickerTheme: TimePickerThemeData(
+                                        helpTextStyle: const TextStyle(fontSize: 16),
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              
+                              if (pickedTime != null) {
+                                // Update the dialog state with the new date and time
+                                setDialogState(() {
+                                  dialogScheduledDate = DateTime(
+                                    pickedDate.year,
+                                    pickedDate.month,
+                                    pickedDate.day,
+                                    pickedTime.hour,
+                                    pickedTime.minute,
+                                  );
+                                });
+                                
+                                // Also update the parent state
+                                setState(() {
+                                  _scheduledDate = dialogScheduledDate;
+                                });
+                              }
+                            }
+                          },
+                          child: InputDecorator(
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              suffixIcon: Icon(Icons.access_time),
+                              hintText: 'Select Date and Time',
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  DateFormat('dd/MM/yyyy hh:mm a').format(dialogScheduledDate),
+                                ),
+                                const Text('(Tap to change)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: _createMatch,
-            child: const Text('Create'),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: _createMatch,
+                child: const Text('Create'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -296,11 +431,11 @@ class _MatchesScreenState extends State<MatchesScreen> {
                           style: TextStyle(fontSize: 18),
                         ),
                         const SizedBox(height: 16),
-                        if (_isAdmin)
-                          ElevatedButton(
-                            onPressed: _showCreateMatchDialog,
-                            child: const Text('Create Match'),
-                          ),
+                        // Allow all users to create matches, not just admins
+                        ElevatedButton(
+                          onPressed: _showCreateMatchDialog,
+                          child: const Text('Create Match'),
+                        ),
                       ],
                     ),
                   );
@@ -362,7 +497,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        DateFormat('yyyy-MM-dd').format(match.scheduledDate),
+                                        DateFormat('dd/MM/yyyy hh:mm a').format(match.scheduledDate),
                                         style: TextStyle(color: Colors.grey[600]),
                                       ),
                                       const Spacer(),
@@ -394,17 +529,17 @@ class _MatchesScreenState extends State<MatchesScreen> {
                         },
                       ),
                     ),
-                    if (_isAdmin)
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: ElevatedButton(
-                          onPressed: _showCreateMatchDialog,
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(50),
-                          ),
-                          child: const Text('Create New Match'),
+                    // Allow all users to create matches, not just admins
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: ElevatedButton(
+                        onPressed: _showCreateMatchDialog,
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(50),
                         ),
+                        child: const Text('Create New Match'),
                       ),
+                    ),
                   ],
                 );
               },

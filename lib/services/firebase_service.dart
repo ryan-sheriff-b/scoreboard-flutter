@@ -1039,4 +1039,31 @@ class FirebaseService {
       rethrow;
     }
   }
+  
+  // Stream of matches for real-time updates
+  Stream<List<Match>> matchesStream({bool completedOnly = false}) {
+    Query query = _firestore.collection('matches');
+    
+    if (completedOnly) {
+      query = query.where('status', isEqualTo: 'completed');
+    }
+    
+    return query.snapshots().map((snapshot) {
+      return _parseMatchesFromSnapshot(snapshot);
+    });
+  }
+  
+  // Stream for a specific match by ID
+  Stream<Match?> matchStream(int matchId) {
+    return _firestore
+        .collection('matches')
+        .where('id', isEqualTo: matchId)
+        .snapshots()
+        .map((snapshot) {
+          if (snapshot.docs.isEmpty) {
+            return null;
+          }
+          return _parseMatchesFromSnapshot(snapshot).first;
+        });
+  }
 }

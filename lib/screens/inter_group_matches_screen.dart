@@ -62,6 +62,9 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
       await groupProvider.loadGroups();
       _groups = groupProvider.groups;
 
+      // Clear existing team data
+      _groupTeams.clear();
+      
       // Load teams for each group
       for (var group in _groups) {
         if (group.id != null) {
@@ -82,16 +85,69 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    // First, select the date
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: _scheduledDate,
-      firstDate: DateTime.now(),
+      firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      helpText: 'SELECT MATCH DATE',
+      confirmText: 'NEXT: SELECT TIME',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            datePickerTheme: DatePickerThemeData(
+              headerHelpStyle: const TextStyle(fontSize: 16),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
-    if (picked != null && picked != _scheduledDate) {
-      setState(() {
-        _scheduledDate = picked;
-      });
+    
+    if (pickedDate != null) {
+      // Then, select the time
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_scheduledDate),
+        helpText: 'SELECT MATCH TIME',
+        confirmText: 'CONFIRM',
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              timePickerTheme: TimePickerThemeData(
+                helpTextStyle: const TextStyle(fontSize: 16),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+      
+      if (pickedTime != null) {
+        // Combine date and time
+        setState(() {
+          _scheduledDate = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      } else {
+        // User selected date but canceled time selection
+        // Still update the date but keep the original time
+        setState(() {
+          _scheduledDate = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            _scheduledDate.hour,
+            _scheduledDate.minute,
+          );
+        });
+      }
     }
   }
 
@@ -203,7 +259,13 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                       onChanged: (value) {
                         setState(() {
                           _selectedGroup1 = value;
-                          _selectedTeam1 = null; // Reset team selection
+                          _selectedTeam1 = null; // Reset team selection when group changes
+                          
+                          // If the same group is selected for both dropdowns, reset group 2
+                          if (_selectedGroup2 != null && value != null && _selectedGroup2!.id == value.id) {
+                            _selectedGroup2 = null;
+                            _selectedTeam2 = null;
+                          }
                         });
                       },
                       validator: (value) {
@@ -241,6 +303,10 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                         if (value == null) {
                           return 'Please select Team 1';
                         }
+                        // Ensure the team belongs to the selected group
+                        if (_selectedGroup1 != null && value.groupId != _selectedGroup1!.id) {
+                          return 'Team must belong to Group 1';
+                        }
                         return null;
                       },
                     ),
@@ -264,7 +330,13 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                       onChanged: (value) {
                         setState(() {
                           _selectedGroup2 = value;
-                          _selectedTeam2 = null; // Reset team selection
+                          _selectedTeam2 = null; // Reset team selection when group changes
+                          
+                          // If the same group is selected for both dropdowns, reset group 1
+                          if (_selectedGroup1 != null && value != null && _selectedGroup1!.id == value.id) {
+                            _selectedGroup1 = null;
+                            _selectedTeam1 = null;
+                          }
                         });
                       },
                       validator: (value) {
@@ -305,6 +377,10 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                         if (value == null) {
                           return 'Please select Team 2';
                         }
+                        // Ensure the team belongs to the selected group
+                        if (_selectedGroup2 != null && value.groupId != _selectedGroup2!.id) {
+                          return 'Team must belong to Group 2';
+                        }
                         return null;
                       },
                     ),
@@ -333,8 +409,8 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                     ),
                     const SizedBox(height: 32),
                     
-                    // Date selection
-                    const Text('Match Date', style: TextStyle(fontWeight: FontWeight.bold)),
+                    // Date and Time selection
+                    const Text('Match Date & Time', style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     InkWell(
                       onTap: () => _selectDate(context),
@@ -344,7 +420,7 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                           suffixIcon: Icon(Icons.calendar_today),
                         ),
                         child: Text(
-                          DateFormat('yyyy-MM-dd').format(_scheduledDate),
+                          DateFormat('dd/MM/yyyy hh:mm a').format(_scheduledDate),
                         ),
                       ),
                     ),

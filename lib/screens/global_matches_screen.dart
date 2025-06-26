@@ -21,10 +21,9 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch all matches when the screen is first loaded
-    Future.microtask(() {
-      Provider.of<GlobalMatchProvider>(context, listen: false).fetchAllMatches();
-    });
+    // The GlobalMatchProvider now automatically sets up a real-time stream
+    // in its constructor, so we don't need to call fetchAllMatches() here.
+    // The stream will provide real-time updates for all matches.
   }
 
   String _getMatchStatusText(String status) {
@@ -145,10 +144,10 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
         const SizedBox(height: 8),
         _buildDetailRow('Match ID', '${match.id}'),
         _buildDetailRow('Status', _getMatchStatusText(match.status)),
-        _buildDetailRow('Scheduled Date', DateFormat('yyyy-MM-dd HH:mm').format(match.scheduledDate)),
+        _buildDetailRow('Scheduled Date', DateFormat('dd/MM/yyyy hh:mm a').format(match.scheduledDate)),
         if (match.completedDate != null)
-          _buildDetailRow('Completed Date', DateFormat('yyyy-MM-dd HH:mm').format(match.completedDate!)),
-        _buildDetailRow('Created At', DateFormat('yyyy-MM-dd HH:mm').format(match.createdAt)),
+          _buildDetailRow('Completed Date', DateFormat('dd/MM/yyyy hh:mm a').format(match.completedDate!)),
+        _buildDetailRow('Created At', DateFormat('dd/MM/yyyy hh:mm a').format(match.createdAt)),
       ],
     );
   }
@@ -386,9 +385,35 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
                               color: Colors.grey[200],
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: Text(
-                              '${match.team1Score} - ${match.team2Score}',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${match.team1Score} - ${match.team2Score}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                if (match.status == 'in_progress') ...[  
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.sync, color: Colors.white, size: 10),
+                                        SizedBox(width: 2),
+                                        Text(
+                                          'LIVE',
+                                          style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -416,7 +441,7 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          DateFormat('yyyy-MM-dd').format(match.scheduledDate),
+                          DateFormat('dd/MM/yyyy hh:mm a').format(match.scheduledDate),
                           style: TextStyle(color: Colors.grey[600]),
                         ),
                         if (match.completedDate != null) ...[  
@@ -428,21 +453,47 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Completed: ${DateFormat('yyyy-MM-dd').format(match.completedDate!)}',
+                            'Completed: ${DateFormat('dd/MM/yyyy hh:mm a').format(match.completedDate!)}',
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                         ],
                         const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: _getMatchStatusColor(match.status),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            _getMatchStatusText(match.status),
-                            style: const TextStyle(color: Colors.white, fontSize: 12),
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: _getMatchStatusColor(match.status),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                _getMatchStatusText(match.status),
+                                style: const TextStyle(color: Colors.white, fontSize: 12),
+                              ),
+                            ),
+                            if (match.status == 'in_progress') ...[  
+                              const SizedBox(width: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.shade700,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.sync, color: Colors.white, size: 10),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      'REAL-TIME',
+                                      style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/match.dart';
 import '../providers/match_provider.dart';
@@ -18,10 +20,20 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   int _team1Score = 0;
   int _team2Score = 0;
   bool _isUpdating = false;
+  StreamSubscription? _matchSubscription;
+  
+  // Controllers for text fields
+  late TextEditingController _team1ScoreController;
+  late TextEditingController _team2ScoreController;
 
   @override
   void initState() {
     super.initState();
+    
+    // Initialize controllers
+    _team1ScoreController = TextEditingController(text: '0');
+    _team2ScoreController = TextEditingController(text: '0');
+    
     Future.microtask(() async {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       await authProvider.refreshAdminStatus();
@@ -37,7 +49,14 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
         setState(() {
           _team1Score = match.team1Score;
           _team2Score = match.team2Score;
+          _team1ScoreController.text = '${match.team1Score}';
+          _team2ScoreController.text = '${match.team2Score}';
         });
+        
+        // Set up real-time listener for match updates if match is in progress
+        if (match.status == 'in_progress') {
+          _setupMatchListener(match.id!);
+        }
       }
     });
   }
@@ -51,8 +70,79 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
       setState(() {
         _team1Score = match.team1Score;
         _team2Score = match.team2Score;
+        _team1ScoreController.text = '${match.team1Score}';
+        _team2ScoreController.text = '${match.team2Score}';
       });
+      
+      // Set up or cancel real-time listener based on match status
+      if (match.status == 'in_progress') {
+        _setupMatchListener(match.id!);
+      } else {
+        // Cancel the subscription if the match is no longer in progress
+        _matchSubscription?.cancel();
+        _matchSubscription = null;
+      }
     }
+  }
+  
+  @override
+  void dispose() {
+    // Dispose controllers to prevent memory leaks
+    _team1ScoreController.dispose();
+    _team2ScoreController.dispose();
+    
+    // Cancel the match subscription if it exists
+    _matchSubscription?.cancel();
+    
+    super.dispose();
+  }
+  
+  void _setupMatchListener(int matchId) {
+    // Cancel any existing subscription
+    _matchSubscription?.cancel();
+    
+    // Set up a real-time listener for the match document
+    _matchSubscription = FirebaseFirestore.instance
+        .collection('matches')
+        .where('id', isEqualTo: matchId)
+        .snapshots()
+        .listen((snapshot) {
+          if (snapshot.docs.isNotEmpty) {
+            final matchData = snapshot.docs.first.data() as Map<String, dynamic>;
+            final String status = matchData['status'] ?? 'scheduled';
+            
+            // Check if match status has changed from in_progress
+            if (status != 'in_progress') {
+              // Cancel subscription if match is no longer in progress
+              _matchSubscription?.cancel();
+              _matchSubscription = null;
+              return;
+            }
+            
+            // Only update if the scores have changed
+            final newTeam1Score = matchData['team1Score'] ?? 0;
+            final newTeam2Score = matchData['team2Score'] ?? 0;
+            
+            if (newTeam1Score != _team1Score || newTeam2Score != _team2Score) {
+              setState(() {
+                _team1Score = newTeam1Score;
+                _team2Score = newTeam2Score;
+                _team1ScoreController.text = '$newTeam1Score';
+                _team2ScoreController.text = '$newTeam2Score';
+              });
+              
+              // Show a notification about the score update
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Match scores updated in real-time'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+            }
+          }
+        }, onError: (error) {
+          print('Error listening to match updates: $error');
+        });
   }
 
   Future<void> _updateScores(Match match) async {
@@ -63,8 +153,13 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     });
     
     try {
-      await Provider.of<MatchProvider>(context, listen: false)
+      final updatedMatch = await Provider.of<MatchProvider>(context, listen: false)
           .updateMatchScore(match.id!, _team1Score, _team2Score);
+      
+      // Set up real-time listener if the match is now in progress
+      if (updatedMatch.status == 'in_progress' && _matchSubscription == null) {
+        _setupMatchListener(match.id!);
+      }
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Scores updated successfully')),
@@ -88,8 +183,12 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     });
     
     try {
-      await Provider.of<MatchProvider>(context, listen: false)
+      final updatedMatch = await Provider.of<MatchProvider>(context, listen: false)
           .completeMatch(match.id!);
+      
+      // Cancel the real-time listener since the match is now completed
+      _matchSubscription?.cancel();
+      _matchSubscription = null;
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Match marked as completed')),
@@ -102,6 +201,64 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
       setState(() {
         _isUpdating = false;
       });
+    }
+  }
+
+  Future<void> _updateScheduledDateTime(Match match) async {
+    if (_isUpdating) return;
+    
+    // First, select the date
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: match.scheduledDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    
+    if (pickedDate != null) {
+      // Then, select the time
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(match.scheduledDate),
+      );
+      
+      if (pickedTime != null) {
+        // Combine date and time
+        final DateTime newScheduledDate = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+        
+        setState(() {
+          _isUpdating = true;
+        });
+        
+        try {
+          // Create updated match with new scheduled date
+          final updatedMatch = match.copyWith(
+            scheduledDate: newScheduledDate,
+          );
+          
+          // Update in provider
+          await Provider.of<MatchProvider>(context, listen: false)
+              .updateMatch(updatedMatch);
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Schedule updated successfully')),
+          );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error updating schedule: $e')),
+          );
+        } finally {
+          setState(() {
+            _isUpdating = false;
+          });
+        }
+      }
     }
   }
 
@@ -214,30 +371,56 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                           child: Column(
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: _getMatchStatusColor(match.status),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      _getMatchStatusText(match.status),
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _getMatchStatusColor(match.status),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _getMatchStatusText(match.status),
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  if (match.status == 'in_progress' && _matchSubscription != null) ...[  
+                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.sync, color: Colors.white, size: 14),
+                          SizedBox(width: 4),
+                          Text('REAL-TIME UPDATES', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
                               const SizedBox(height: 16),
                               Row(
                                 children: [
                                   const Icon(Icons.calendar_today),
                                   const SizedBox(width: 8),
-                                  Text(
-                                    'Scheduled: ${DateFormat('yyyy-MM-dd').format(match.scheduledDate)}',
-                                    style: const TextStyle(fontSize: 16),
+                                  Expanded(
+                                    child: Text(
+                                      'Scheduled: ${DateFormat('dd/MM/yyyy hh:mm a').format(match.scheduledDate)}',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
                                   ),
+                                  if (_isAdmin && match.status != 'completed')
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      tooltip: 'Update Schedule',
+                                      onPressed: () => _updateScheduledDateTime(match),
+                                    ),
                                 ],
                               ),
                               if (match.completedDate != null) ...[  
@@ -247,7 +430,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                                     const Icon(Icons.check_circle),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'Completed: ${DateFormat('yyyy-MM-dd').format(match.completedDate!)}',
+                                      'Completed: ${DateFormat('dd/MM/yyyy hh:mm a').format(match.completedDate!)}',
                                       style: const TextStyle(fontSize: 16),
                                     ),
                                   ],
@@ -281,25 +464,55 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                                             ? Row(
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
+                                                  if (match.status == 'in_progress' && _matchSubscription != null)
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                      margin: const EdgeInsets.only(right: 8),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.green,
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                      child: const Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Icon(Icons.sync, color: Colors.white, size: 12),
+                                                          SizedBox(width: 4),
+                                                          Text('LIVE', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                                        ],
+                                                      ),
+                                                    ),
                                                   IconButton(
                                                     icon: const Icon(Icons.remove_circle),
                                                     onPressed: _team1Score > 0
                                                         ? () {
                                                             setState(() {
                                                               _team1Score--;
+                                                              _team1ScoreController.text = '$_team1Score';
                                                             });
                                                           }
                                                         : null,
                                                   ),
                                                   Container(
-                                                    padding: const EdgeInsets.all(16),
+                                                    width: 80,
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8),
                                                     decoration: BoxDecoration(
                                                       color: Colors.blue[100],
                                                       borderRadius: BorderRadius.circular(8),
                                                     ),
-                                                    child: Text(
-                                                      '$_team1Score',
+                                                    child: TextField(
+                                                      textAlign: TextAlign.center,
+                                                      keyboardType: TextInputType.number,
+                                                      controller: _team1ScoreController,
                                                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                                      decoration: const InputDecoration(
+                                                        border: InputBorder.none,
+                                                        contentPadding: EdgeInsets.zero,
+                                                      ),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _team1Score = int.tryParse(value) ?? 0;
+                                                        });
+                                                      },
                                                     ),
                                                   ),
                                                   IconButton(
@@ -307,6 +520,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                                                     onPressed: () {
                                                       setState(() {
                                                         _team1Score++;
+                                                        _team1ScoreController.text = '$_team1Score';
                                                       });
                                                     },
                                                   ),
@@ -346,25 +560,55 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                                             ? Row(
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
+                                                  if (match.status == 'in_progress' && _matchSubscription != null)
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                      margin: const EdgeInsets.only(right: 8),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.green,
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                      child: const Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Icon(Icons.sync, color: Colors.white, size: 12),
+                                                          SizedBox(width: 4),
+                                                          Text('LIVE', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                                        ],
+                                                      ),
+                                                    ),
                                                   IconButton(
                                                     icon: const Icon(Icons.remove_circle),
                                                     onPressed: _team2Score > 0
                                                         ? () {
                                                             setState(() {
                                                               _team2Score--;
+                                                              _team2ScoreController.text = '$_team2Score';
                                                             });
                                                           }
                                                         : null,
                                                   ),
                                                   Container(
-                                                    padding: const EdgeInsets.all(16),
+                                                    width: 80,
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8),
                                                     decoration: BoxDecoration(
                                                       color: Colors.red[100],
                                                       borderRadius: BorderRadius.circular(8),
                                                     ),
-                                                    child: Text(
-                                                      '$_team2Score',
+                                                    child: TextField(
+                                                      textAlign: TextAlign.center,
+                                                      keyboardType: TextInputType.number,
+                                                      controller: _team2ScoreController,
                                                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                                      decoration: const InputDecoration(
+                                                        border: InputBorder.none,
+                                                        contentPadding: EdgeInsets.zero,
+                                                      ),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _team2Score = int.tryParse(value) ?? 0;
+                                                        });
+                                                      },
                                                     ),
                                                   ),
                                                   IconButton(
@@ -372,6 +616,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                                                     onPressed: () {
                                                       setState(() {
                                                         _team2Score++;
+                                                        _team2ScoreController.text = '$_team2Score';
                                                       });
                                                     },
                                                   ),

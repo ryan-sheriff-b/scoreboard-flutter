@@ -303,7 +303,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
                           Text(teamDescription),
                           const SizedBox(height: 4),
                           Text(
-                            'Created: ${DateFormat('MMM dd, yyyy').format(team.createdAt)}',
+                            'Created: ${DateFormat('dd/MM/yyyy').format(team.createdAt)}',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],

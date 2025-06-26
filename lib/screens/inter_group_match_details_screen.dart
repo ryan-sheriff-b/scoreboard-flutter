@@ -143,6 +143,68 @@ class _InterGroupMatchDetailsScreenState extends State<InterGroupMatchDetailsScr
     }
   }
 
+  Future<void> _updateScheduledDateTime() async {
+    if (_isUpdating) return;
+    
+    // First, select the date
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: widget.match.scheduledDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    
+    if (pickedDate != null) {
+      // Then, select the time
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(widget.match.scheduledDate),
+      );
+      
+      if (pickedTime != null) {
+        // Combine date and time
+        final DateTime newScheduledDate = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+        
+        setState(() {
+          _isUpdating = true;
+        });
+        
+        try {
+          // Create updated match with new scheduled date
+          final updatedMatch = widget.match.copyWith(
+            scheduledDate: newScheduledDate,
+          );
+          
+          // Update in provider
+          await Provider.of<GlobalMatchProvider>(context, listen: false)
+              .updateMatch(updatedMatch);
+          
+          // Refresh the matches list
+          await Provider.of<GlobalMatchProvider>(context, listen: false)
+              .fetchInterGroupMatches();
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Schedule updated successfully')),
+          );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error updating schedule: $e')),
+          );
+        } finally {
+          setState(() {
+            _isUpdating = false;
+          });
+        }
+      }
+    }
+  }
+
   String _getMatchStatusText(String status) {
     switch (status) {
       case 'scheduled':
@@ -242,10 +304,18 @@ class _InterGroupMatchDetailsScreenState extends State<InterGroupMatchDetailsScr
                             children: [
                               const Icon(Icons.calendar_today),
                               const SizedBox(width: 8),
-                              Text(
-                                'Scheduled: ${DateFormat('yyyy-MM-dd').format(widget.match.scheduledDate)}',
-                                style: const TextStyle(fontSize: 16),
+                              Expanded(
+                                child: Text(
+                                  'Scheduled: ${DateFormat('dd/MM/yyyy hh:mm a').format(widget.match.scheduledDate)}',
+                                  style: const TextStyle(fontSize: 16),
+                                ),
                               ),
+                              if (_isAdmin && widget.match.status != 'completed')
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  tooltip: 'Update Schedule',
+                                  onPressed: _updateScheduledDateTime,
+                                ),
                             ],
                           ),
                           if (widget.match.completedDate != null) ...[  
@@ -255,7 +325,7 @@ class _InterGroupMatchDetailsScreenState extends State<InterGroupMatchDetailsScr
                                 const Icon(Icons.check_circle),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Completed: ${DateFormat('yyyy-MM-dd').format(widget.match.completedDate!)}',
+                                  'Completed: ${DateFormat('dd/MM/yyyy hh:mm a').format(widget.match.completedDate!)}',
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ],

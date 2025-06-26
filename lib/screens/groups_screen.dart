@@ -282,7 +282,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                       Text(group.description),
                       const SizedBox(height: 4),
                       Text(
-                        'Created: ${DateFormat('MMM dd, yyyy').format(group.createdAt)}',
+                        'Created: ${DateFormat('dd/MM/yyyy').format(group.createdAt)}',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],
