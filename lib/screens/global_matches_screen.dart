@@ -7,6 +7,7 @@ import '../models/member.dart';
 import '../providers/global_match_provider.dart';
 import '../providers/auth_provider.dart';
 import '../routes/routes.dart';
+import '../constants/ui_constants.dart';
 
 class GlobalMatchesScreen extends StatefulWidget {
   const GlobalMatchesScreen({super.key});
@@ -98,9 +99,11 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
           children: [
             const Icon(Icons.handshake, color: Colors.grey),
             const SizedBox(width: 8),
-            Text(
-              'Draw: ${winnerInfo['team1Name']} and ${winnerInfo['team2Name']} (${winnerInfo['score']})',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            Flexible(
+              child: Text(
+                'Draw: ${winnerInfo['team1Name']} and ${winnerInfo['team2Name']} (${winnerInfo['score']})',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -205,34 +208,35 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            if (members.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('No team members found'),
-              )
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: members.length,
-                itemBuilder: (context, index) {
-                  final member = members[index];
-                  return ListTile(
-                    dense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blue[100],
-                      child: Text(
-                        member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
-                        style: TextStyle(color: Colors.blue[800]),
-                      ),
-                    ),
-                    title: Text(member.name),
-                    subtitle: Text(member.role),
-                  );
-                },
-              ),
+            
+            
+            // if (members.isEmpty)
+            //   const Padding(
+            //     padding: EdgeInsets.all(8.0),
+            //     child: Text('No team members found'),
+            //   )
+            // else
+            //   ListView.builder(
+            //     shrinkWrap: true,
+            //     physics: const NeverScrollableScrollPhysics(),
+            //     itemCount: members.length,
+            //     itemBuilder: (context, index) {
+            //       final member = members[index];
+            //       return ListTile(
+            //         dense: true,
+            //         contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+            //         leading: CircleAvatar(
+            //           backgroundColor: Colors.blue[100],
+            //           child: Text(
+            //             member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+            //             style: TextStyle(color: Colors.blue[800]),
+            //           ),
+            //         ),
+            //         title: Text(member.name),
+            //         subtitle: Text(member.role),
+            //       );
+            //     },
+            //   ),
           ],
         );
       },
@@ -274,13 +278,13 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
               },
             );
           }),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              Provider.of<GlobalMatchProvider>(context, listen: false)
-                  .fetchAllMatches();
-            },
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.refresh),
+          //   onPressed: () {
+          //     Provider.of<GlobalMatchProvider>(context, listen: false)
+          //         .fetchAllMatches();
+          //   },
+          // ),
           if (isAuthenticated)
             IconButton(
               icon: const Icon(Icons.exit_to_app),
@@ -328,13 +332,16 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
               final winnerInfo = matchProvider.getMatchWinner(match);
 
               return Card(
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+                margin: AppPadding.getListItemPadding(context),
                 child: ExpansionTile(
-                  tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                  tilePadding: MediaQuery.of(context).size.width < AppSizing.mobileBreakpoint
+                    ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+                    : AppPadding.getListItemPadding(context),
+                  childrenPadding: EdgeInsets.only(
+                    left: 8.0,
+                    right: 8.0,
+                    bottom: AppPadding.smallSpacing,
+                  ),
                   expandedCrossAxisAlignment: CrossAxisAlignment.start,
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,17 +358,19 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
                                 color: Colors.grey[600],
                                 fontWeight: FontWeight.bold,
                               ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: _getMatchTypeColor(match.matchType),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               _getMatchTypeText(match.matchType),
-                              style: const TextStyle(color: Colors.white, fontSize: 12),
+                              style: const TextStyle(color: Colors.white, fontSize: 10),
                             ),
                           ),
                         ],
@@ -372,15 +381,18 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
                       Row(
                         children: [
                           Expanded(
+                            flex: 3,
                             child: Text(
                               match.team1Name,
                               textAlign: TextAlign.end,
                               style: const TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.grey[200],
                               borderRadius: BorderRadius.circular(4),
@@ -390,7 +402,7 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
                               children: [
                                 Text(
                                   '${match.team1Score} - ${match.team2Score}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                                 ),
                                 if (match.status == 'in_progress') ...[  
                                   const SizedBox(width: 4),
@@ -416,11 +428,14 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 4),
                           Expanded(
+                            flex: 3,
                             child: Text(
                               match.team2Name,
                               style: const TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
                         ],
@@ -432,71 +447,160 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
                   ),
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 16,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          DateFormat('dd/MM/yyyy hh:mm a').format(match.scheduledDate),
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                        if (match.completedDate != null) ...[  
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.check_circle,
-                            size: 16,
-                            color: Colors.grey[600],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Completed: ${DateFormat('dd/MM/yyyy hh:mm a').format(match.completedDate!)}',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ],
-                        const Spacer(),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
+                    child: MediaQuery.of(context).size.width < AppSizing.mobileBreakpoint
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: _getMatchStatusColor(match.status),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                _getMatchStatusText(match.status),
-                                style: const TextStyle(color: Colors.white, fontSize: 12),
-                              ),
-                            ),
-                            if (match.status == 'in_progress') ...[  
-                              const SizedBox(width: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.shade700,
-                                  borderRadius: BorderRadius.circular(12),
+                            // Date information
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_today,
+                                  size: 16,
+                                  color: Colors.grey[600],
                                 ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    DateFormat('dd/MM/yyyy hh:mm a').format(match.scheduledDate),
+                                    style: TextStyle(color: Colors.grey[600]),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // Completed date if available
+                            if (match.completedDate != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Row(
                                   children: [
-                                    Icon(Icons.sync, color: Colors.white, size: 10),
-                                    SizedBox(width: 2),
-                                    Text(
-                                      'REAL-TIME',
-                                      style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                                    Icon(
+                                      Icons.check_circle,
+                                      size: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        'Completed: ${DateFormat('dd/MM/yyyy hh:mm a').format(match.completedDate!)}',
+                                        style: TextStyle(color: Colors.grey[600]),
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
+                            // Status information
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: _getMatchStatusColor(match.status),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      _getMatchStatusText(match.status),
+                                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                                    ),
+                                  ),
+                                  if (match.status == 'in_progress') ...[  
+                                    const SizedBox(width: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.shade700,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.sync, color: Colors.white, size: 10),
+                                          SizedBox(width: 2),
+                                          Text(
+                                            'REAL-TIME',
+                                            style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 16,
+                              color: Colors.grey[600],
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                DateFormat('dd/MM/yyyy hh:mm a').format(match.scheduledDate),
+                                style: TextStyle(color: Colors.grey[600]),
+                              ),
+                            ),
+                            if (match.completedDate != null) ...[  
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.check_circle,
+                                size: 16,
+                                color: Colors.grey[600],
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  'Completed: ${DateFormat('dd/MM/yyyy hh:mm a').format(match.completedDate!)}',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                              ),
                             ],
+                            const Spacer(),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: _getMatchStatusColor(match.status),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    _getMatchStatusText(match.status),
+                                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                                  ),
+                                ),
+                                if (match.status == 'in_progress') ...[  
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.shade700,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.sync, color: Colors.white, size: 10),
+                                        SizedBox(width: 2),
+                                        Text(
+                                          'REAL-TIME',
+                                          style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ],
                         ),
-                      ],
-                    ),
                   ),
                   children: [
                     const Divider(),
@@ -506,7 +610,12 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
                     // Team members sections
                     const SizedBox(height: 16),
                     _buildTeamMembersSection(match.team1Id, match.team1Name),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text('Vs'),
+              ),
+                    const SizedBox(height: 8),
                     _buildTeamMembersSection(match.team2Id, match.team2Name),
                   ],
                 ),

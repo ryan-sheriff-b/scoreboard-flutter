@@ -6,6 +6,7 @@ import '../models/match.dart';
 import '../providers/global_match_provider.dart';
 import '../providers/auth_provider.dart';
 import '../routes/routes.dart';
+import '../constants/ui_constants.dart';
 
 class InterGroupMatchesListScreen extends StatefulWidget {
   const InterGroupMatchesListScreen({super.key});
@@ -128,13 +129,15 @@ class _InterGroupMatchesListScreenState extends State<InterGroupMatchesListScree
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Create New Inter-Group Match',
-            onPressed: () {
-              Navigator.of(context).pushNamed(AppRoutes.interGroupMatches);
-            },
-          ),
+          // Only show the create button for admin users
+          if (authProvider.isAdmin)
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Create New Inter-Group Match',
+              onPressed: () {
+                Navigator.of(context).pushNamed(AppRoutes.interGroupMatches);
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
@@ -184,12 +187,25 @@ class _InterGroupMatchesListScreenState extends State<InterGroupMatchesListScree
                     style: TextStyle(fontSize: 18),
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).pushNamed(AppRoutes.interGroupMatches);
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, _) {
+                      // Only show the create button for admin users
+                      if (authProvider.isAdmin) {
+                        return ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).pushNamed(AppRoutes.interGroupMatches);
+                          },
+                          icon: const Icon(Icons.add),
+                          label: const Text('Create Inter-Group Match'),
+                        );
+                      } else {
+                        return const Text(
+                          'Only administrators can create inter-group matches',
+                          style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        );
+                      }
                     },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Create Inter-Group Match'),
                   ),
                 ],
               ),
@@ -252,10 +268,7 @@ class _InterGroupMatchesListScreenState extends State<InterGroupMatchesListScree
                   }
                 },
                 child: Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  margin: AppPadding.getListItemPadding(context),
                   child: ListTile(
                     onTap: () {
                       AppRoutes.navigateToInterGroupMatchDetails(context, match);

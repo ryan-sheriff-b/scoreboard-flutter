@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/firebase_service.dart';
+import '../constants/ui_constants.dart';
 
 class GroupLeaderboardScreen extends StatefulWidget {
   final int groupId;
@@ -85,7 +86,10 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen> {
                         children: [
                           Card(
                             elevation: isTopThree ? 4 : 1,
-                            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                            margin: EdgeInsets.symmetric(
+                              vertical: 4, 
+                              horizontal: AppPadding.getListItemPadding(context).horizontal / 2
+                            ),
                             color: isTopThree
                                 ? rank == 1
                                     ? Colors.amber.shade50

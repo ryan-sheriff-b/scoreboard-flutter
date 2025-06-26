@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/firebase_service.dart';
 import '../providers/auth_provider.dart';
 import '../routes/routes.dart';
+import '../constants/ui_constants.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
@@ -90,7 +91,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         children: [
                           Card(
                             elevation: isTopThree ? 4 : 1,
-                            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                            margin: EdgeInsets.symmetric(
+                              vertical: 4, 
+                              horizontal: AppPadding.getListItemPadding(context).horizontal / 2
+                            ),
                             color: isTopThree
                                 ? rank == 1
                                     ? Colors.amber.shade50

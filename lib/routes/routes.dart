@@ -36,7 +36,8 @@ class AppRoutes {
   static Map<String, WidgetBuilder> getRoutes() {
     return {
       home: (context) => const AuthWrapper(),
-      login: (context) => const LoginScreen(),
+      // login route removed to prevent direct navigation
+      // login: (context) => const LoginScreen(),
       register: (context) => const RegisterScreen(),
       groups: (context) => const GroupsScreen(),
       leaderboard: (context) => const LeaderboardScreen(),

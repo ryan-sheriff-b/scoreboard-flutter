@@ -7,6 +7,7 @@ import '../models/team.dart';
 import '../providers/team_provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/firebase_service.dart';
+import '../constants/ui_constants.dart';
 import 'members_screen.dart';
 import 'team_scores_screen.dart';
 import 'group_leaderboard_screen.dart';
@@ -66,6 +67,10 @@ class _TeamsScreenState extends State<TeamsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Add New Team'),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppPadding.mediumSpacing,
+          vertical: AppPadding.smallSpacing,
+        ),
         content: Form(
           key: _formKey,
           child: Column(
@@ -81,6 +86,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
                   return null;
                 },
               ),
+              SizedBox(height: AppPadding.smallSpacing * 2),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
@@ -127,6 +133,10 @@ class _TeamsScreenState extends State<TeamsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Edit Team'),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppPadding.mediumSpacing,
+          vertical: AppPadding.smallSpacing,
+        ),
         content: Form(
           key: _formKey,
           child: Column(
@@ -142,6 +152,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
                   return null;
                 },
               ),
+              SizedBox(height: AppPadding.smallSpacing * 2),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
@@ -221,21 +232,21 @@ class _TeamsScreenState extends State<TeamsScreen> {
             },
             tooltip: 'Matches',
           ),
-          IconButton(
-            icon: const Icon(Icons.leaderboard),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => GroupLeaderboardScreen(
-                    groupId: widget.group.id!,
-                    groupName: widget.group.name,
-                  ),
-                ),
-              );
-            },
-            tooltip: 'Group Leaderboard',
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.leaderboard),
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         builder: (context) => GroupLeaderboardScreen(
+          //           groupId: widget.group.id!,
+          //           groupName: widget.group.name,
+          //         ),
+          //       ),
+          //     );
+          //   },
+          //   tooltip: 'Group Leaderboard',
+          // ),
         ],
       ),
       body: Consumer<TeamProvider>(
@@ -270,7 +281,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
               );
 
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: AppPadding.getListItemPadding(context),
                 child: Column(
                   children: [
                     ListTile(
@@ -281,20 +292,20 @@ class _TeamsScreenState extends State<TeamsScreen> {
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              'Score: $totalScore',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                          // Container(
+                          //   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          //   decoration: BoxDecoration(
+                          //     color: Colors.blue,
+                          //     borderRadius: BorderRadius.circular(12),
+                          //   ),
+                          //   child: Text(
+                          //     'Score: $totalScore',
+                          //     style: const TextStyle(
+                          //       color: Colors.white,
+                          //       fontWeight: FontWeight.bold,
+                          //     ),
+                          //   ),
+                          // ),
                         ],
                       ),
                       subtitle: Column(
@@ -316,30 +327,30 @@ class _TeamsScreenState extends State<TeamsScreen> {
                       alignment: MainAxisAlignment.spaceEvenly,
                       children: _isAdmin
                           ? [
-                              TextButton.icon(
-                                icon: const Icon(Icons.people),
-                                label: const Text('Members'),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MembersScreen(team: team),
-                                    ),
-                                  );
-                                },
-                              ),
-                              TextButton.icon(
-                                icon: const Icon(Icons.score),
-                                label: const Text('Scores'),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => TeamScoresScreen(team: team),
-                                    ),
-                                  );
-                                },
-                              ),
+                              // TextButton.icon(
+                              //   icon: const Icon(Icons.people),
+                              //   label: const Text('Members'),
+                              //   onPressed: () {
+                              //     Navigator.push(
+                              //       context,
+                              //       MaterialPageRoute(
+                              //         builder: (context) => MembersScreen(team: team),
+                              //       ),
+                              //     );
+                              //   },
+                              // ),
+                              // TextButton.icon(
+                              //   icon: const Icon(Icons.score),
+                              //   label: const Text('Scores'),
+                              //   onPressed: () {
+                              //     Navigator.push(
+                              //       context,
+                              //       MaterialPageRoute(
+                              //         builder: (context) => TeamScoresScreen(team: team),
+                              //       ),
+                              //     );
+                              //   },
+                              // ),
                               TextButton.icon(
                                 icon: const Icon(Icons.edit),
                                 label: const Text('Edit'),
@@ -353,36 +364,36 @@ class _TeamsScreenState extends State<TeamsScreen> {
                             ]
                           : [
                               // For non-admin users, only show view options
-                              TextButton.icon(
-                                icon: const Icon(Icons.people),
-                                label: const Text('View Members'),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MembersScreen(
-                                        team: team,
-                                        readOnly: true,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              TextButton.icon(
-                                icon: const Icon(Icons.score),
-                                label: const Text('View Scores'),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => TeamScoresScreen(
-                                        team: team,
-                                        readOnly: true,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
+                              // TextButton.icon(
+                              //   icon: const Icon(Icons.people),
+                              //   label: const Text('View Members'),
+                              //   onPressed: () {
+                              //     Navigator.push(
+                              //       context,
+                              //       MaterialPageRoute(
+                              //         builder: (context) => MembersScreen(
+                              //           team: team,
+                              //           readOnly: true,
+                              //         ),
+                              //       ),
+                              //     );
+                              //   },
+                              // ),
+                              // TextButton.icon(
+                              //   icon: const Icon(Icons.score),
+                              //   label: const Text('View Scores'),
+                              //   onPressed: () {
+                              //     Navigator.push(
+                              //       context,
+                              //       MaterialPageRoute(
+                              //         builder: (context) => TeamScoresScreen(
+                              //           team: team,
+                              //           readOnly: true,
+                              //         ),
+                              //       ),
+                              //     );
+                              //   },
+                              // ),
                             ],
                     ),
                   ],

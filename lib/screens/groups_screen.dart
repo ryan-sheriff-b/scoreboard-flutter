@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 import '../providers/global_match_provider.dart';
 import '../services/firebase_service.dart';
 import '../routes/routes.dart';
+import '../constants/ui_constants.dart';
 import 'teams_screen.dart';
 
 class GroupsScreen extends StatefulWidget {
@@ -59,6 +60,10 @@ class _GroupsScreenState extends State<GroupsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Add New Group'),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppPadding.mediumSpacing,
+          vertical: AppPadding.smallSpacing,
+        ),
         content: Form(
           key: _formKey,
           child: Column(
@@ -74,6 +79,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                   return null;
                 },
               ),
+              SizedBox(height: AppPadding.smallSpacing * 2),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
@@ -119,6 +125,10 @@ class _GroupsScreenState extends State<GroupsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Edit Group'),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppPadding.mediumSpacing,
+          vertical: AppPadding.smallSpacing,
+        ),
         content: Form(
           key: _formKey,
           child: Column(
@@ -134,6 +144,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                   return null;
                 },
               ),
+              SizedBox(height: AppPadding.smallSpacing * 2),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
@@ -216,11 +227,11 @@ class _GroupsScreenState extends State<GroupsScreen> {
               await authProvider.setAdminStatus(!authProvider.isAdmin);
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.leaderboard),
-            onPressed: () => Navigator.of(context).pushNamed(AppRoutes.leaderboard),
-            tooltip: 'Global Leaderboard',
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.leaderboard),
+          //   onPressed: () => Navigator.of(context).pushNamed(AppRoutes.leaderboard),
+          //   tooltip: 'Global Leaderboard',
+          // ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
@@ -270,7 +281,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
             itemBuilder: (ctx, index) {
               final group = groupProvider.groups[index];
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: AppPadding.getListItemPadding(context),
                 child: ListTile(
                   title: Text(
                     group.name,
@@ -280,7 +291,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(group.description),
-                      const SizedBox(height: 4),
+                      SizedBox(height: AppPadding.smallSpacing / 2),
                       Text(
                         'Created: ${DateFormat('dd/MM/yyyy').format(group.createdAt)}',
                         style: TextStyle(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../routes/routes.dart';
+import '../constants/ui_constants.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -68,7 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
+          padding: AppPadding.screenPadding,
           child: Form(
             key: _formKey,
             child: Column(
@@ -80,7 +81,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: AppPadding.largeSpacing),
                 TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(
@@ -95,7 +96,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: AppPadding.smallSpacing * 2),
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(
@@ -114,7 +115,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: AppPadding.smallSpacing * 2),
                 TextFormField(
                   controller: _passwordController,
                   decoration: const InputDecoration(
@@ -133,7 +134,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: AppPadding.smallSpacing * 2),
                 TextFormField(
                   controller: _confirmPasswordController,
                   decoration: const InputDecoration(
@@ -153,18 +154,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 if (_errorMessage.isNotEmpty) ...[  
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppPadding.smallSpacing * 2),
                   Text(
                     _errorMessage,
                     style: const TextStyle(color: Colors.red),
                     textAlign: TextAlign.center,
                   ),
                 ],
-                const SizedBox(height: 24),
+                SizedBox(height: AppPadding.mediumSpacing),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.symmetric(vertical: AppPadding.smallSpacing * 2),
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                   ),
@@ -172,7 +173,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text('Register', style: TextStyle(fontSize: 16)),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: AppPadding.smallSpacing * 2),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: const Text('Already have an account? Sign In'),

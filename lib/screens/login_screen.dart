@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../routes/routes.dart';
+import '../constants/ui_constants.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -70,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
+          padding: AppPadding.screenPaddingResponsive,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -80,13 +81,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 size: 80,
                 color: Colors.blue,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: AppPadding.mediumSpacing),
               const Text(
                 'Welcome to Scoreboard',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: AppPadding.largeSpacing),
               Form(
                 key: _formKey,
                 child: Column(
@@ -109,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: AppPadding.smallSpacing * 2),
                     TextFormField(
                       controller: _passwordController,
                       decoration: const InputDecoration(
@@ -129,18 +130,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     if (_errorMessage.isNotEmpty) ...[  
-                      const SizedBox(height: 16),
+                      SizedBox(height: AppPadding.smallSpacing * 2),
                       Text(
                         _errorMessage,
                         style: const TextStyle(color: Colors.red),
                         textAlign: TextAlign.center,
                       ),
                     ],
-                    const SizedBox(height: 24),
+                    SizedBox(height: AppPadding.mediumSpacing),
                     ElevatedButton(
                       onPressed: _isLoading ? null : _signIn,
+                      // Using theme-based button style, no need to specify padding here
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
                       ),
@@ -148,12 +149,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text('Sign In', style: TextStyle(fontSize: 16)),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: AppPadding.smallSpacing * 2),
                     // TextButton(
                     //   onPressed: _navigateToRegister,
                     //   child: const Text('Don\'t have an account? Register'),
                     // ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: AppPadding.mediumSpacing),
                   ],
                 ),
               ),

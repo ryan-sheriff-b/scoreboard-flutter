@@ -10,6 +10,7 @@ import '../providers/match_provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/firebase_service.dart';
 import '../routes/routes.dart';
+import '../constants/ui_constants.dart';
 
 class MatchesScreen extends StatefulWidget {
   final Group group;
@@ -240,7 +241,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: AppPadding.smallSpacing * 2),
                     DropdownButtonFormField<Team>(
                       decoration: const InputDecoration(labelText: 'Team 2'),
                       value: _selectedTeam2,
@@ -262,7 +263,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: AppPadding.smallSpacing * 2),
                     DropdownButtonFormField<String>(
                       decoration: const InputDecoration(labelText: 'Match Type'),
                       value: _selectedMatchType,
@@ -278,12 +279,12 @@ class _MatchesScreenState extends State<MatchesScreen> {
                         });
                       },
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: AppPadding.smallSpacing * 2),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Scheduled Date & Time', style: TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
+                        SizedBox(height: AppPadding.smallSpacing),
                         InkWell(
                           onTap: () async {
                             // First, select the date
@@ -449,10 +450,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                         itemBuilder: (ctx, index) {
                           final match = matches[index];
                           return Card(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
+                            margin: AppPadding.getListItemPadding(context),
                             child: ListTile(
                               title: Row(
                                 children: [

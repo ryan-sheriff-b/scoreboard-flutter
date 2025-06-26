@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/match.dart';
 import '../providers/match_provider.dart';
 import '../providers/auth_provider.dart';
+import '../constants/ui_constants.dart';
 
 class MatchDetailsScreen extends StatefulWidget {
   const MatchDetailsScreen({super.key});
@@ -360,21 +361,21 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
           body: _isUpdating
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: AppPadding.screenPaddingResponsive,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Status and date info
                       Card(
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: AppPadding.cardPadding,
                           child: Column(
                             children: [
                               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: AppPadding.listItemPadding,
                     decoration: BoxDecoration(
                       color: _getMatchStatusColor(match.status),
                       borderRadius: BorderRadius.circular(20),
@@ -385,9 +386,9 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                     ),
                   ),
                   if (match.status == 'in_progress' && _matchSubscription != null) ...[  
-                    const SizedBox(width: 10),
+                    SizedBox(width: AppPadding.smallSpacing),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: AppPadding.smallSpacing, vertical: AppPadding.smallSpacing / 2),
                       decoration: BoxDecoration(
                         color: Colors.green,
                         borderRadius: BorderRadius.circular(12),
@@ -396,7 +397,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.sync, color: Colors.white, size: 14),
-                          SizedBox(width: 4),
+                          SizedBox(width: AppPadding.smallSpacing / 2),
                           Text('REAL-TIME UPDATES', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                         ],
                       ),

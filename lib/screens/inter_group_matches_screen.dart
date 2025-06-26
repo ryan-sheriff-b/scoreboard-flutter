@@ -12,6 +12,7 @@ import '../providers/auth_provider.dart';
 import '../providers/global_match_provider.dart';
 import '../services/firebase_service.dart';
 import '../routes/routes.dart';
+import '../constants/ui_constants.dart';
 
 class InterGroupMatchesScreen extends StatefulWidget {
   const InterGroupMatchesScreen({super.key});
@@ -48,7 +49,19 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    
+    // Check if the user is an admin, if not redirect to the matches list screen
+    Future.microtask(() {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      if (!authProvider.isAdmin) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Only administrators can create inter-group matches')),
+        );
+        Navigator.of(context).pushReplacementNamed(AppRoutes.interGroupMatchesList);
+        return;
+      }
+      _loadData();
+    });
   }
 
   Future<void> _loadData() async {
@@ -239,11 +252,11 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                       'Create a match between teams from different groups',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: AppPadding.largeSpacing),
                     
                     // Group 1 selection
                     const Text('First Group', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
+                    SizedBox(height: AppPadding.smallSpacing),
                     DropdownButtonFormField<Group>(
                       decoration: const InputDecoration(
                         labelText: 'Select Group 1',
@@ -275,7 +288,7 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: AppPadding.smallSpacing * 2),
                     
                     // Team 1 selection (only enabled if group 1 is selected)
                     DropdownButtonFormField<Team>(
@@ -310,11 +323,11 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: AppPadding.largeSpacing + AppPadding.smallSpacing),
                     
                     // Group 2 selection
                     const Text('Second Group', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
+                    SizedBox(height: AppPadding.smallSpacing),
                     DropdownButtonFormField<Group>(
                       decoration: const InputDecoration(
                         labelText: 'Select Group 2',
@@ -349,7 +362,7 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: AppPadding.smallSpacing * 2),
                     
                     // Team 2 selection (only enabled if group 2 is selected)
                     DropdownButtonFormField<Team>(
@@ -384,11 +397,11 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: AppPadding.largeSpacing + AppPadding.smallSpacing),
                     
                     // Match Type selection
                     const Text('Match Type', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
+                    SizedBox(height: AppPadding.smallSpacing),
                     DropdownButtonFormField<String>(
                       decoration: const InputDecoration(
                         labelText: 'Select Match Type',
@@ -407,11 +420,11 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                         });
                       },
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: AppPadding.largeSpacing + AppPadding.smallSpacing),
                     
                     // Date and Time selection
                     const Text('Match Date & Time', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
+                    SizedBox(height: AppPadding.smallSpacing),
                     InkWell(
                       onTap: () => _selectDate(context),
                       child: InputDecorator(
@@ -424,13 +437,13 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: AppPadding.largeSpacing + AppPadding.smallSpacing),
                     
                     // Create button
                     ElevatedButton(
                       onPressed: _createMatch,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: EdgeInsets.symmetric(vertical: AppPadding.smallSpacing * 2),
                       ),
                       child: const Text('Create Inter-Group Match'),
                     ),

@@ -7,6 +7,7 @@ import '../models/member.dart';
 import '../providers/member_provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/firebase_service.dart';
+import '../constants/ui_constants.dart';
 
 class MembersScreen extends StatefulWidget {
   final Team team;
@@ -71,6 +72,7 @@ class _MembersScreenState extends State<MembersScreen> {
                   return null;
                 },
               ),
+              SizedBox(height: AppPadding.smallSpacing * 2),
               TextFormField(
                 controller: _roleController,
                 decoration: const InputDecoration(labelText: 'Role'),
@@ -132,6 +134,7 @@ class _MembersScreenState extends State<MembersScreen> {
                   return null;
                 },
               ),
+              SizedBox(height: AppPadding.smallSpacing * 2),
               TextFormField(
                 controller: _roleController,
                 decoration: const InputDecoration(labelText: 'Role'),
@@ -214,7 +217,7 @@ class _MembersScreenState extends State<MembersScreen> {
             itemBuilder: (ctx, index) {
               final member = memberProvider.members[index];
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: AppPadding.getListItemPadding(context),
                 child: ListTile(
                   leading: CircleAvatar(
                     child: Text(member.name[0].toUpperCase()),

@@ -8,6 +8,7 @@ import '../providers/score_provider.dart';
 import '../providers/team_provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/firebase_service.dart';
+import '../constants/ui_constants.dart';
 
 class TeamScoresScreen extends StatefulWidget {
   final Team team;
@@ -76,6 +77,7 @@ class _TeamScoresScreenState extends State<TeamScoresScreen> {
                   return null;
                 },
               ),
+              SizedBox(height: AppPadding.smallSpacing * 2),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
@@ -148,6 +150,7 @@ class _TeamScoresScreenState extends State<TeamScoresScreen> {
                   return null;
                 },
               ),
+              SizedBox(height: AppPadding.smallSpacing * 2),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
@@ -270,7 +273,7 @@ class _TeamScoresScreenState extends State<TeamScoresScreen> {
                         itemBuilder: (ctx, index) {
                           final score = scoreProvider.scores[index];
                           return Card(
-                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            margin: AppPadding.getListItemPadding(context),
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: score.points > 0 ? Colors.green : Colors.red,
