@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:scoreboard/widgets/appbar_icon.dart';
 
 import '../models/match.dart';
 import '../providers/match_provider.dart';
@@ -349,7 +350,23 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
         
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Match Details'),
+            toolbarHeight: 100,
+        title: const Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AppBarIcon(),
+            Spacer(),
+            Center(
+              child: Text('Match Details'),
+            ),
+            Spacer(),
+            SizedBox(height: 150,
+            width: 150,)
+
+          ],
+        ),
+            // title: const Text('Match Details'),
             actions: [
               if (_isAdmin)
                 IconButton(

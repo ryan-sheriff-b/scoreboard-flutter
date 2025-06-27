@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:scoreboard/screens/group_leaderboard_screen.dart';
+import 'package:scoreboard/widgets/appbar_icon.dart';
 
 import '../models/group.dart';
 import '../providers/group_provider.dart';
@@ -210,7 +211,23 @@ class _GroupsScreenState extends State<GroupsScreen> {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Groups'),
+        toolbarHeight: 100,
+        title: const Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AppBarIcon(),
+            Spacer(),
+            Center(
+              child: Text('Groups'),
+            ),
+            Spacer(),
+            SizedBox(height: 150,
+            width: 150,)
+
+          ],
+        ),
+        // title: const Text('Groups'),
         actions: [
           // Admin toggle button for testing
           TextButton.icon(

@@ -25,7 +25,7 @@ class TeamProvider with ChangeNotifier {
 
     try {
       _teams = await _firebaseService.getTeams(groupId);
-      _teamsWithScores = await _firebaseService.getTeamsWithScores(groupId);
+      _teamsWithScores = await _firebaseService.getAllTeamsWithScores(groupId: groupId);
     } catch (e) {
       print('Error loading teams: $e');
     } finally {
@@ -74,7 +74,7 @@ class TeamProvider with ChangeNotifier {
 
   Future<void> refreshTeamsWithScores() async {
     if (_currentGroupId != null) {
-      _teamsWithScores = await _firebaseService.getTeamsWithScores(_currentGroupId!);
+      _teamsWithScores = await _firebaseService.getAllTeamsWithScores(groupId: _currentGroupId);
       notifyListeners();
     }
   }

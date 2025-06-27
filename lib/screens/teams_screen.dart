@@ -216,6 +216,22 @@ class _TeamsScreenState extends State<TeamsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 100,
+        // title: const Row(
+        //   crossAxisAlignment: CrossAxisAlignment.center,
+        //   mainAxisAlignment: MainAxisAlignment.center,
+        //   children: [
+        //     AppBarIcon(),
+        //     Spacer(),
+        //     Center(
+        //       child: Text('Matches - ${widget.group.name}'),
+        //     ),
+        //     Spacer(),
+        //     SizedBox(height: 150,
+        //     width: 150,)
+
+        //   ],
+        // ),
         title: Text('${widget.group.name} - Teams'),
         actions: [
           IconButton(

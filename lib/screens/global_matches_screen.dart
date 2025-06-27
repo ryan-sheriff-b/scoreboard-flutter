@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:scoreboard/widgets/appbar_icon.dart';
 
 import '../models/match.dart';
 import '../models/member.dart';
@@ -254,11 +255,28 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Global Match History'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+        toolbarHeight: 100,
+        title: const Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AppBarIcon(),
+            Spacer(),
+            Center(
+              child: Text('Global Match History'),
+            ),
+            Spacer(),
+            SizedBox(height: 150,
+            width: 150,)
+
+          ],
         ),
+      // appBar: AppBar(
+      //   title: const Text('Global Match History'),
+      //   leading: IconButton(
+      //     icon: const Icon(Icons.arrow_back),
+      //     onPressed: () => Navigator.of(context).pop(),
+      //   ),,
         actions: [
           IconButton(
             icon: const Icon(Icons.compare_arrows),

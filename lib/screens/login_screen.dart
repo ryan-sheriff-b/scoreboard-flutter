@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scoreboard/widgets/appbar_icon.dart';
 import '../providers/auth_provider.dart';
 import '../routes/routes.dart';
 import '../constants/ui_constants.dart';
@@ -66,7 +67,23 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scoreboard App by Rahman'),
+        toolbarHeight: 100,
+        title: const Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AppBarIcon(),
+            Spacer(),
+            Center(
+              child: Text('Scoreboard App'),
+            ),
+            Spacer(),
+            SizedBox(height: 150,
+            width: 150,)
+
+          ],
+        ),
+        // title: const Text('Scoreboard App by Rahman'),
         centerTitle: true,
       ),
       body: Center(

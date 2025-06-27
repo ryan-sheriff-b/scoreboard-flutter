@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:scoreboard/widgets/appbar_icon.dart';
 
 import '../models/group.dart';
 import '../models/team.dart';
@@ -228,7 +229,23 @@ class _InterGroupMatchesScreenState extends State<InterGroupMatchesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Inter-Group Match'),
+        toolbarHeight: 100,
+        title: const Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AppBarIcon(),
+            Spacer(),
+            Center(
+              child: Text('Create Inter-Group Match'),
+            ),
+            Spacer(),
+            SizedBox(height: 150,
+            width: 150,)
+
+          ],
+        ),
+        // title: const Text('Create Inter-Group Match'),
         actions: [
           IconButton(
             icon: const Icon(Icons.list),

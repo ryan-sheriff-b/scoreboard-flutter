@@ -129,53 +129,53 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GlobalMatchProvider()),
       ],
       child: MaterialApp(
-        title: 'Scoreboard App by Rahman Basha',
+        title: 'Mako Scoreboard by Rahman Basha',
         debugShowCheckedModeBanner: false,
         navigatorKey: navigatorKey,
         navigatorObservers: [urlObserver],
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.orangeAccent),
           useMaterial3: true,
           appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.blue,
+            backgroundColor: Colors.orange,
             foregroundColor: Colors.white,
           ),
-          floatingActionButtonTheme: const FloatingActionButtonThemeData(
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-          ),
-          // Add standardized padding through input decorations
-          inputDecorationTheme: InputDecorationTheme(
-            contentPadding: AppPadding.formFieldPadding,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: BorderSide(color: Colors.blue, width: 2.0),
-            ),
-          ),
-          // Add standardized padding through card theme
-          cardTheme: CardTheme(
-            elevation: 2.0,
-            margin: AppPadding.listItemPadding,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-          ),
-          // Add standardized padding through button theme
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              padding: AppPadding.buttonPadding,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-            ),
-          ),
+          // floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          //   backgroundColor: Colors.blue,
+          //   foregroundColor: Colors.white,
+          // ),
+          // // Add standardized padding through input decorations
+          // inputDecorationTheme: InputDecorationTheme(
+          //   contentPadding: AppPadding.formFieldPadding,
+          //   border: OutlineInputBorder(
+          //     borderRadius: BorderRadius.circular(8.0),
+          //   ),
+          //   enabledBorder: OutlineInputBorder(
+          //     borderRadius: BorderRadius.circular(8.0),
+          //     borderSide: BorderSide(color: Colors.grey.shade300),
+          //   ),
+          //   focusedBorder: OutlineInputBorder(
+          //     borderRadius: BorderRadius.circular(8.0),
+          //     borderSide: BorderSide(color: Colors.blue, width: 2.0),
+          //   ),
+          // ),
+          // // Add standardized padding through card theme
+          // cardTheme: CardTheme(
+          //   elevation: 2.0,
+          //   margin: AppPadding.listItemPadding,
+          //   shape: RoundedRectangleBorder(
+          //     borderRadius: BorderRadius.circular(8.0),
+          //   ),
+          // ),
+          // // Add standardized padding through button theme
+          // elevatedButtonTheme: ElevatedButtonThemeData(
+          //   style: ElevatedButton.styleFrom(
+          //     padding: AppPadding.buttonPadding,
+          //     shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(8.0),
+          //     ),
+          //   ),
+          // ),
         ),
         initialRoute: AppRoutes.home,
         // Use onGenerateRoute for all routes to handle web URLs properly

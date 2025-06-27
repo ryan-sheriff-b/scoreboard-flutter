@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:scoreboard/routes/routes.dart';
+import 'package:scoreboard/widgets/appbar_icon.dart';
 import '../services/firebase_service.dart';
 import '../providers/auth_provider.dart';
-import '../routes/routes.dart';
 import '../constants/ui_constants.dart';
 import '../models/match.dart';
 
@@ -241,7 +242,23 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Global Leaderboard'),
+        toolbarHeight: 100,
+        title: const Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AppBarIcon(),
+            Spacer(),
+            Center(
+              child: Text('Global Leaderboard'),
+            ),
+            Spacer(),
+            SizedBox(height: 150,
+            width: 150,)
+
+          ],
+        ),
+        // title: const Text('Global Leaderboard'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -302,102 +319,108 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // Inside your itemBuilder...
-
-// This is the new, corrected ListTile.
-// Replace your existing ListTile with this one.
-ListTile(
-  contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-  // Make the ListTile feel a bit more spacious to accommodate the new subtitle
-  minVerticalPadding: 12.0, 
-  leading: CircleAvatar(
-    backgroundColor: isTopThree
-        ? rank == 1
-            ? Colors.amber
-            : rank == 2
-                ? Colors.blueGrey.shade300
-                : Colors.brown.shade300
-        : Colors.blue,
-    child: Text(
-      '$rank',
-      style: const TextStyle(color: Colors.white),
-    ),
-  ),
-  title: Text(
-    team['name'],
-    style: const TextStyle(fontWeight: FontWeight.bold),
-  ),
-  // --- FIX START: Use a Column in the subtitle for multi-line info ---
-  subtitle: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text('Group: ${team['groupName']}'),
-      const SizedBox(height: 4),
-      // Uncomment this line if you want to show it here as well
-      // Text(
-      //   'Match: ${team['matchScore'] ?? 0} }',
-      //   style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-      // ),
-      Text(
-        'Matches: ${team['totalMatches'] ?? 0} | Matches played: ${team['completedMatches'] ?? 0} | W: ${team['wins'] ?? 0} | L: ${team['losses'] ?? 0} | D: ${team['draws'] ?? 0}',
-        style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-      ),
-    ],
-  ),
-  // --- FIX END ---
-  trailing: Row(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.center, // Center items vertically
-    children: [
-      // --- FIX START: Simplified the trailing widget ---
-      // The container now only holds the points, no more complex Column needed.
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.blue,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          '${team['totalScore']} pts',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      // --- FIX END ---
-      const SizedBox(width: 8),
-      IconButton(
-        icon: Icon(
-          isExpanded
-              ? Icons.keyboard_arrow_up
-              : Icons.keyboard_arrow_down,
-          color: Colors.grey,
-        ),
-        onPressed: () {
-          setState(() {
-            if (isExpanded) {
-              _expandedTeams.remove(teamId);
-            } else {
-              _loadTeamMatches(teamId);
-              _expandedTeams.add(teamId);
-            }
-          });
-        },
-      ),
-    ],
-  ),
-  onTap: () {
-    setState(() {
-      if (isExpanded) {
-        _expandedTeams.remove(teamId);
-      } else {
-        _loadTeamMatches(teamId);
-        _expandedTeams.add(teamId);
-      }
-    });
-  },
-),
+             
+                                  ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0, vertical: 8.0),
+                                    // Make the ListTile feel a bit more spacious to accommodate the new subtitle
+                                    minVerticalPadding: 12.0,
+                                    leading: CircleAvatar(
+                                      backgroundColor: isTopThree
+                                          ? rank == 1
+                                              ? Colors.amber
+                                              : rank == 2
+                                                  ? Colors.blueGrey.shade300
+                                                  : Colors.brown.shade300
+                                          : Colors.blue,
+                                      child: Text(
+                                        '$rank',
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      team['name'],
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    // --- FIX START: Use a Column in the subtitle for multi-line info ---
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Group: ${team['groupName']}'),
+                                        const SizedBox(height: 4),
+                                        // Uncomment this line if you want to show it here as well
+                                        // Text(
+                                        //   'Match: ${team['matchScore'] ?? 0} }',
+                                        //   style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                        // ),
+                                        Text(
+                                          'Matches: ${team['totalMatches'] ?? 0} | Matches played: ${team['completedMatches'] ?? 0} | W: ${team['wins'] ?? 0} | L: ${team['losses'] ?? 0} | D: ${team['draws'] ?? 0}',
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey[700]),
+                                        ),
+                                      ],
+                                    ),
+                                    // --- FIX END ---
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment
+                                          .center, // Center items vertically
+                                      children: [
+                                        // --- FIX START: Simplified the trailing widget ---
+                                        // The container now only holds the points, no more complex Column needed.
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: Text(
+                                            '${team['totalScore']} pts',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        // --- FIX END ---
+                                        const SizedBox(width: 8),
+                                        IconButton(
+                                          icon: Icon(
+                                            isExpanded
+                                                ? Icons.keyboard_arrow_up
+                                                : Icons.keyboard_arrow_down,
+                                            color: Colors.grey,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              if (isExpanded) {
+                                                _expandedTeams.remove(teamId);
+                                              } else {
+                                                _loadTeamMatches(teamId);
+                                                _expandedTeams.add(teamId);
+                                              }
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    onTap: () {
+                                      setState(() {
+                                        if (isExpanded) {
+                                          _expandedTeams.remove(teamId);
+                                        } else {
+                                          _loadTeamMatches(teamId);
+                                          _expandedTeams.add(teamId);
+                                        }
+                                      });
+                                    },
+                                  ),
                                   if (isExpanded)
                                     Container(
                                       padding: const EdgeInsets.symmetric(
@@ -516,41 +539,39 @@ ListTile(
                                                     //       ),
                                                     //     ),
                                                     //   ),
-                                                  
                                                   ],
                                                 );
                                               }
                                             },
                                           ),
-                                          // Padding(
-                                          //   padding: const EdgeInsets.symmetric(
-                                          //       horizontal: 0, vertical: 8),
-                                          //   child: ElevatedButton(
-                                          //     style: ElevatedButton.styleFrom(
-                                          //       backgroundColor: Colors.blue,
-                                          //       foregroundColor: Colors.white,
-                                          //       minimumSize:
-                                          //           const Size.fromHeight(36),
-                                          //     ),
-                                          //     onPressed: () {
-                                          //       final groupId = team['groupId']
-                                          //               is int
-                                          //           ? team['groupId']
-                                          //           : int.parse(team['groupId']
-                                          //               .toString());
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 0, vertical: 8),
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.blue,
+                                                foregroundColor: Colors.white,
+                                                minimumSize:
+                                                    const Size.fromHeight(36),
+                                              ),
+                                              onPressed: () {
+                                                final groupId = team['groupId']
+                                                        is int
+                                                    ? team['groupId']
+                                                    : int.parse(team['groupId']
+                                                        .toString());
 
-                                          //       AppRoutes
-                                          //           .navigateToGroupLeaderboard(
-                                          //         context,
-                                          //         groupId,
-                                          //         team['groupName'],
-                                          //       );
-                                          //     },
-                                          //     child: const Text(
-                                          //         'View Group Leaderboard'),
-                                          //   ),
-                                          // ),
-                                        
+                                                AppRoutes
+                                                    .navigateToGroupLeaderboard(
+                                                  context,
+                                                  groupId,
+                                                  team['groupName'],
+                                                );
+                                              },
+                                              child: const Text(
+                                                  'View Group Leaderboard'),
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
