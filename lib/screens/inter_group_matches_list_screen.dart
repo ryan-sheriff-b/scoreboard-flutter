@@ -126,7 +126,11 @@ class _InterGroupMatchesListScreenState extends State<InterGroupMatchesListScree
         title: const Text('Inter-Group Matches'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            // Reset the GlobalMatchProvider before navigating back
+            Provider.of<GlobalMatchProvider>(context, listen: false).setupMatchesStream();
+            Navigator.of(context).pop();
+          },
         ),
         actions: [
           // Only show the create button for admin users

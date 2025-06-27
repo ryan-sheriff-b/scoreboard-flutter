@@ -118,44 +118,36 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen> {
                                     style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   subtitle: Text(team['description'] ?? ''),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 6,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue,
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: Text(
-                                          '${team['totalScore']} pts',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      IconButton(
-                                        icon: Icon(
-                                          isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                                          color: Colors.grey,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            if (isExpanded) {
-                                              _expandedTeams.remove(teamId);
-                                            } else {
-                                              _expandedTeams.add(teamId);
-                                            }
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
+                                  trailing: Column(
+  crossAxisAlignment: CrossAxisAlignment.end,
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.blue,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        '${team['totalScore']} pts',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+    const SizedBox(height: 4),
+    Text(
+      'W: ${team['wins'] ?? 0} | L: ${team['losses'] ?? 0} | D: ${team['draws'] ?? 0}',
+      style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+    ),
+    Text(
+      'Matches: ${team['totalMatches'] ?? 0}',
+      style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+    ),
+  ],
+),
+
                                   onTap: () {
                                     // Toggle expansion when tapped
                                     setState(() {

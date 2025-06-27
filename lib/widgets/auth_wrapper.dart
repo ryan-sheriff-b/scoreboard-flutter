@@ -77,17 +77,17 @@ class AuthWrapper extends StatelessWidget {
               },
             ),
             const SizedBox(height: 16),
-            // ElevatedButton.icon(
-            //   icon: const Icon(Icons.leaderboard),
-            //   label: const Text('View Leaderboard'),
-            //   style: ElevatedButton.styleFrom(
-            //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            //   ),
-            //   onPressed: () {
-            //     // Navigate to leaderboard screen as guest
-            //     Navigator.pushNamed(context, AppRoutes.leaderboard);
-            //   },
-            // ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.leaderboard),
+              label: const Text('View Leaderboard'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              onPressed: () {
+                // Navigate to leaderboard screen as guest
+                Navigator.pushNamed(context, AppRoutes.leaderboard);
+              },
+            ),
             // const SizedBox(height: 16),
             // ElevatedButton.icon(
             //   icon: const Icon(Icons.login),

@@ -558,158 +558,228 @@ class FirebaseService {
   }
 
   // Get teams with scores ordered by score
-  Future<List<Map<String, dynamic>>> getTeamsWithScores(int groupId) async {
-    try {
-      // Get all teams in the group
-      QuerySnapshot teamsSnapshot = await _firestore
-          .collection('teams')
-          .where('groupId', isEqualTo: groupId)
-          .get();
-      
-      List<Map<String, dynamic>> teamsWithScores = [];
-      
-      // For each team, calculate the total score
-      for (var teamDoc in teamsSnapshot.docs) {
-        Map<String, dynamic> teamData = teamDoc.data() as Map<String, dynamic>;
-        // Use the stored ID if available, otherwise generate from document ID
-        int teamId = (teamData['id'] as int?) ?? teamDoc.id.hashCode;
-        
-        // Get all scores for the team
-        QuerySnapshot scoresSnapshot = await _firestore
-            .collection('scores')
-            .where('teamId', isEqualTo: teamId)
-            .get();
-        
-        int totalScore = 0;
-        for (var scoreDoc in scoresSnapshot.docs) {
-          Map<String, dynamic> scoreData = scoreDoc.data() as Map<String, dynamic>;
-          totalScore += scoreData['points'] as int;
-        }
-        
-        // Get all members for the team
-        QuerySnapshot membersSnapshot = await _firestore
-            .collection('members')
-            .where('teamId', isEqualTo: teamId)
-            .get();
-        
-        List<Map<String, dynamic>> members = membersSnapshot.docs.map((memberDoc) {
-          Map<String, dynamic> memberData = memberDoc.data() as Map<String, dynamic>;
-          return {
-            'name': memberData['name'] ?? '',
-            'role': memberData['role'] ?? '',
-          };
-        }).toList();
-        
-        teamsWithScores.add({
-          'id': teamId,
-          'name': teamData['name'] ?? '',
-          'description': teamData['description'] ?? '',
-          'totalScore': totalScore,
-          'members': members,
-        });
+Future<List<Map<String, dynamic>>> getTeamsWithScores(int groupId) async {
+  try {
+    // Step 1: Get all teams in the group
+    QuerySnapshot teamsSnapshot = await _firestore
+        .collection('teams')
+        .where('groupId', isEqualTo: groupId)
+        .get();
+
+    // Step 2: Get all completed matches involving these teams
+    QuerySnapshot matchesSnapshot = await _firestore
+        .collection('matches')
+        .where('status', isEqualTo: 'completed')
+        .get();
+
+    List<Match> allMatches = _parseMatchesFromSnapshot(matchesSnapshot);
+    List<Map<String, dynamic>> teamsWithScores = [];
+
+    // Step 3: Build maps for scores
+    Map<int, int> teamGoalsScored = {};
+    Map<int, int> teamWins = {};
+    Map<int, int> teamLosses = {};
+    Map<int, int> teamDraws = {};
+    Map<int, int> teamTotalMatches = {};
+
+    // Step 4: Process each match
+    for (var match in allMatches) {
+      // Only consider matches where either team belongs to the group
+      bool isGroupMatch = match.team1GroupId == groupId || match.team2GroupId == groupId;
+      if (!isGroupMatch) continue;
+
+      teamTotalMatches[match.team1Id] = (teamTotalMatches[match.team1Id] ?? 0) + 1;
+      teamTotalMatches[match.team2Id] = (teamTotalMatches[match.team2Id] ?? 0) + 1;
+
+      teamGoalsScored[match.team1Id] = (teamGoalsScored[match.team1Id] ?? 0) + match.team1Score;
+      teamGoalsScored[match.team2Id] = (teamGoalsScored[match.team2Id] ?? 0) + match.team2Score;
+
+      if (match.team1Score > match.team2Score) {
+        teamWins[match.team1Id] = (teamWins[match.team1Id] ?? 0) + 1;
+        teamLosses[match.team2Id] = (teamLosses[match.team2Id] ?? 0) + 1;
+      } else if (match.team2Score > match.team1Score) {
+        teamWins[match.team2Id] = (teamWins[match.team2Id] ?? 0) + 1;
+        teamLosses[match.team1Id] = (teamLosses[match.team1Id] ?? 0) + 1;
+      } else {
+        teamDraws[match.team1Id] = (teamDraws[match.team1Id] ?? 0) + 1;
+        teamDraws[match.team2Id] = (teamDraws[match.team2Id] ?? 0) + 1;
       }
-      
-      // Sort by total score in descending order
-      teamsWithScores.sort((a, b) => b['totalScore'].compareTo(a['totalScore']));
-      
-      return teamsWithScores;
-    } catch (e) {
-      print('Error getting teams with scores: $e');
-      return [];
     }
+
+    // Step 5: Build leaderboard data
+    for (var teamDoc in teamsSnapshot.docs) {
+      Map<String, dynamic> teamData = teamDoc.data() as Map<String, dynamic>;
+      int teamId = (teamData['id'] as int?) ?? teamDoc.id.hashCode;
+
+      int totalScore = teamGoalsScored[teamId] ?? 0;
+
+      // Get members
+      QuerySnapshot membersSnapshot = await _firestore
+          .collection('members')
+          .where('teamId', isEqualTo: teamId)
+          .get();
+
+      List<Map<String, dynamic>> members = membersSnapshot.docs.map((memberDoc) {
+        Map<String, dynamic> memberData = memberDoc.data() as Map<String, dynamic>;
+        return {
+          'name': memberData['name'] ?? '',
+          'role': memberData['role'] ?? '',
+        };
+      }).toList();
+
+      teamsWithScores.add({
+        'id': teamId,
+        'name': teamData['name'] ?? '',
+        'description': teamData['description'] ?? '',
+        'groupId': groupId,
+        'totalScore': totalScore,
+        'wins': teamWins[teamId] ?? 0,
+        'losses': teamLosses[teamId] ?? 0,
+        'draws': teamDraws[teamId] ?? 0,
+        'totalMatches': teamTotalMatches[teamId] ?? 0,
+        'members': members,
+      });
+    }
+
+    // Step 6: Sort by totalScore (goals scored)
+    teamsWithScores.sort((a, b) => b['totalScore'].compareTo(a['totalScore']));
+    return teamsWithScores;
+  } catch (e) {
+    print('Error getting teams with scores: $e');
+    return [];
   }
+}
+
 
   // Get all teams with scores across all groups (for global leaderboard)
-  Future<List<Map<String, dynamic>>> getAllTeamsWithScores() async {
-    try {
-      // Get all teams
-      QuerySnapshot teamsSnapshot = await _firestore
-          .collection('teams')
-          .get();
-      
-      List<Map<String, dynamic>> teamsWithScores = [];
-      
-      // For each team, calculate the total score
-      for (var teamDoc in teamsSnapshot.docs) {
-        Map<String, dynamic> teamData = teamDoc.data() as Map<String, dynamic>;
-        // Use the stored ID if available, otherwise generate from document ID
-        int teamId = (teamData['id'] as int?) ?? teamDoc.id.hashCode;
-        int groupId = (teamData['groupId'] as int?) ?? 0;
-        
-        // Get the group name
-        String groupName = '';
-        if (groupId > 0) {
-          // First, try to find the group by querying for the ID field
-          QuerySnapshot groupSnapshot = await _firestore
-              .collection('groups')
-              .where('id', isEqualTo: groupId)
-              .limit(1)
-              .get();
-          
-          if (groupSnapshot.docs.isNotEmpty) {
-            // If we found the document by ID field, use it
-            Map<String, dynamic> groupData = groupSnapshot.docs.first.data() as Map<String, dynamic>;
+Future<List<Map<String, dynamic>>> getAllTeamsWithScores() async {
+  try {
+    print('DEBUG: Getting all teams with scores from matches');
+
+    // Fetch all teams
+    QuerySnapshot teamsSnapshot = await _firestore.collection('teams').get();
+    List<Map<String, dynamic>> teamsWithScores = [];
+
+    // Fetch ALL matches (any status)
+    QuerySnapshot matchesSnapshot = await _firestore.collection('matches').get();
+
+    List<Match> allMatches = _parseMatchesFromSnapshot(matchesSnapshot);
+    print('DEBUG: Found ${allMatches.length} total matches');
+
+    // Initialize stats maps
+    Map<int, int> teamGoalsScored = {};
+    Map<int, int> teamMatchPoints = {};
+    Map<int, int> teamWins = {};
+    Map<int, int> teamLosses = {};
+    Map<int, int> teamDraws = {};
+    Map<int, int> teamTotalMatches = {};        // All statuses
+    Map<int, int> teamCompletedMatches = {};    // Only completed
+
+    for (var match in allMatches) {
+      // Count all matches
+      teamTotalMatches[match.team1Id] = (teamTotalMatches[match.team1Id] ?? 0) + 1;
+      teamTotalMatches[match.team2Id] = (teamTotalMatches[match.team2Id] ?? 0) + 1;
+
+      if (match.status != 'completed') continue;
+
+      // Count completed matches
+      teamCompletedMatches[match.team1Id] = (teamCompletedMatches[match.team1Id] ?? 0) + 1;
+      teamCompletedMatches[match.team2Id] = (teamCompletedMatches[match.team2Id] ?? 0) + 1;
+
+      // Goals scored
+      teamGoalsScored[match.team1Id] = (teamGoalsScored[match.team1Id] ?? 0) + match.team1Score;
+      teamGoalsScored[match.team2Id] = (teamGoalsScored[match.team2Id] ?? 0) + match.team2Score;
+
+      // Win/Draw points
+      if (match.team1Score > match.team2Score) {
+        teamMatchPoints[match.team1Id] = (teamMatchPoints[match.team1Id] ?? 0) + 3;
+        teamWins[match.team1Id] = (teamWins[match.team1Id] ?? 0) + 1;
+        teamLosses[match.team2Id] = (teamLosses[match.team2Id] ?? 0) + 1;
+      } else if (match.team2Score > match.team1Score) {
+        teamMatchPoints[match.team2Id] = (teamMatchPoints[match.team2Id] ?? 0) + 3;
+        teamWins[match.team2Id] = (teamWins[match.team2Id] ?? 0) + 1;
+        teamLosses[match.team1Id] = (teamLosses[match.team1Id] ?? 0) + 1;
+      } else {
+        teamMatchPoints[match.team1Id] = (teamMatchPoints[match.team1Id] ?? 0) + 1;
+        teamMatchPoints[match.team2Id] = (teamMatchPoints[match.team2Id] ?? 0) + 1;
+        teamDraws[match.team1Id] = (teamDraws[match.team1Id] ?? 0) + 1;
+        teamDraws[match.team2Id] = (teamDraws[match.team2Id] ?? 0) + 1;
+      }
+    }
+
+    for (var teamDoc in teamsSnapshot.docs) {
+      Map<String, dynamic> teamData = teamDoc.data() as Map<String, dynamic>;
+      int teamId = (teamData['id'] as int?) ?? teamDoc.id.hashCode;
+      int groupId = (teamData['groupId'] as int?) ?? 0;
+
+      // Group name fetch
+      String groupName = '';
+      if (groupId > 0) {
+        QuerySnapshot groupSnapshot = await _firestore
+            .collection('groups')
+            .where('id', isEqualTo: groupId)
+            .limit(1)
+            .get();
+
+        if (groupSnapshot.docs.isNotEmpty) {
+          Map<String, dynamic> groupData = groupSnapshot.docs.first.data() as Map<String, dynamic>;
+          groupName = groupData['name'] ?? '';
+        } else {
+          DocumentSnapshot groupDoc = await _firestore.collection('groups').doc(groupId.toString()).get();
+          if (groupDoc.exists) {
+            Map<String, dynamic> groupData = groupDoc.data() as Map<String, dynamic>;
             groupName = groupData['name'] ?? '';
-          } else {
-            // If we couldn't find it by ID field, try using the ID as document ID
-            DocumentSnapshot groupDoc = await _firestore
-                .collection('groups')
-                .doc(groupId.toString())
-                .get();
-            
-            if (groupDoc.exists) {
-              Map<String, dynamic> groupData = groupDoc.data() as Map<String, dynamic>;
-              groupName = groupData['name'] ?? '';
-            }
           }
         }
-        
-        // Get all scores for the team
-        QuerySnapshot scoresSnapshot = await _firestore
-            .collection('scores')
-            .where('teamId', isEqualTo: teamId)
-            .get();
-        
-        int totalScore = 0;
-        for (var scoreDoc in scoresSnapshot.docs) {
-          Map<String, dynamic> scoreData = scoreDoc.data() as Map<String, dynamic>;
-          totalScore += scoreData['points'] as int;
-        }
-        
-        // Get all members for the team
-        QuerySnapshot membersSnapshot = await _firestore
-            .collection('members')
-            .where('teamId', isEqualTo: teamId)
-            .get();
-        
-        List<Map<String, dynamic>> members = membersSnapshot.docs.map((memberDoc) {
-          Map<String, dynamic> memberData = memberDoc.data() as Map<String, dynamic>;
-          return {
-            'name': memberData['name'] ?? '',
-            'role': memberData['role'] ?? '',
-          };
-        }).toList();
-        
-        teamsWithScores.add({
-          'id': teamId,
-          'name': teamData['name'] ?? '',
-          'description': teamData['description'] ?? '',
-          'groupId': groupId,
-          'groupName': groupName,
-          'totalScore': totalScore,
-          'members': members,
-        });
       }
-      
-      // Sort by total score in descending order
-      teamsWithScores.sort((a, b) => b['totalScore'].compareTo(a['totalScore']));
-      
-      return teamsWithScores;
-    } catch (e) {
-      print('Error getting all teams with scores: $e');
-      return [];
+
+      // Stats
+      int matchScore = teamMatchPoints[teamId] ?? 0;
+      int totalScore = teamGoalsScored[teamId] ?? 0;
+      int totalMatches = teamTotalMatches[teamId] ?? 0;
+      int completedMatches = teamCompletedMatches[teamId] ?? 0;
+
+      // Members
+      QuerySnapshot membersSnapshot = await _firestore
+          .collection('members')
+          .where('teamId', isEqualTo: teamId)
+          .get();
+
+      List<Map<String, dynamic>> members = membersSnapshot.docs.map((memberDoc) {
+        Map<String, dynamic> memberData = memberDoc.data() as Map<String, dynamic>;
+        return {
+          'name': memberData['name'] ?? '',
+          'role': memberData['role'] ?? '',
+        };
+      }).toList();
+
+      teamsWithScores.add({
+        'id': teamId,
+        'name': teamData['name'] ?? '',
+        'description': teamData['description'] ?? '',
+        'groupId': groupId,
+        'groupName': groupName,
+        'matchScore': matchScore,
+        'totalScore': totalScore,
+        'wins': teamWins[teamId] ?? 0,
+        'losses': teamLosses[teamId] ?? 0,
+        'draws': teamDraws[teamId] ?? 0,
+        'totalMatches': totalMatches,             // ✅ All matches
+        'completedMatches': completedMatches,     // ✅ Only completed matches
+        'members': members,
+      });
     }
+
+    // Sort leaderboard by totalScore (goals scored)
+    teamsWithScores.sort((a, b) => b['totalScore'].compareTo(a['totalScore']));
+
+    return teamsWithScores;
+  } catch (e) {
+    print('Error getting all teams with scores: $e');
+    return [];
   }
+}
+
 
   // Helper method to generate a stable integer ID from a document ID
   int _generateIdFromDocId(String docId) {
@@ -750,6 +820,47 @@ class FirebaseService {
       return _parseMatchesFromSnapshot(matchesSnapshot);
     } catch (e) {
       print('Error getting all matches: $e');
+      return [];
+    }
+  }
+    
+  // Get matches for a specific team
+  Future<List<Match>> getMatchesByTeamId(int teamId) async {
+    print('DEBUG: Firebase - Getting matches for team $teamId');
+    try {
+      // We need to query for matches where the team is either team1 or team2
+      print('DEBUG: Firebase - Querying for team1 matches');
+      final team1MatchesSnapshot = await _firestore
+          .collection('matches')
+          .where('team1Id', isEqualTo: teamId)
+          .orderBy('scheduledDate', descending: true)
+          .get();
+      print('DEBUG: Firebase - Found ${team1MatchesSnapshot.docs.length} team1 matches');
+          
+      print('DEBUG: Firebase - Querying for team2 matches');
+      final team2MatchesSnapshot = await _firestore
+          .collection('matches')
+          .where('team2Id', isEqualTo: teamId)
+          .orderBy('scheduledDate', descending: true)
+          .get();
+      print('DEBUG: Firebase - Found ${team2MatchesSnapshot.docs.length} team2 matches');
+      
+      // Parse both sets of matches
+      List<Match> team1Matches = _parseMatchesFromSnapshot(team1MatchesSnapshot);
+      List<Match> team2Matches = _parseMatchesFromSnapshot(team2MatchesSnapshot);
+      
+      print('DEBUG: Firebase - Parsed ${team1Matches.length} team1 matches and ${team2Matches.length} team2 matches');
+      
+      // Combine the matches
+      List<Match> allTeamMatches = [...team1Matches, ...team2Matches];
+      
+      // Sort by scheduled date (most recent first)
+      allTeamMatches.sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
+      
+      print('DEBUG: Firebase - Returning ${allTeamMatches.length} total matches for team $teamId');
+      return allTeamMatches;
+    } catch (e) {
+      print('ERROR: Firebase - Error getting matches for team $teamId: $e');
       return [];
     }
   }

@@ -10,6 +10,7 @@ class GlobalMatchProvider with ChangeNotifier {
   List<Match> _allMatches = [];
   bool _isLoading = false;
   bool _showCompletedOnly = false;
+  bool _needsReset = false;
   
   // Stream subscription for real-time updates
   Stream<List<Match>>? _matchesStream;
@@ -21,10 +22,11 @@ class GlobalMatchProvider with ChangeNotifier {
   List<Match> get allMatches => _allMatches;
   bool get isLoading => _isLoading;
   bool get showCompletedOnly => _showCompletedOnly;
+  bool get needsReset => _needsReset;
   
   // Constructor to initialize the stream
   GlobalMatchProvider() {
-    _setupMatchesStream();
+    setupMatchesStream();
   }
   
   // Dispose method to clean up resources
@@ -40,7 +42,7 @@ class GlobalMatchProvider with ChangeNotifier {
     // Cancel existing subscription
     _cancelMatchesSubscription();
     // Set up new stream with updated filter
-    _setupMatchesStream();
+    setupMatchesStream();
   }
   
   // Fetch team members for a specific team
@@ -62,9 +64,14 @@ class GlobalMatchProvider with ChangeNotifier {
   }
 
   // Set up real-time stream for matches
-  void _setupMatchesStream() {
+  void setupMatchesStream() {
     _isLoading = true;
+    _needsReset = false; // Reset the flag when setting up the stream
+    _showCompletedOnly = false; // Always show all matches by default
     notifyListeners();
+    
+    // Cancel any existing subscription first
+    _cancelMatchesSubscription();
     
     // Get the stream from FirebaseService
     _matchesStream = _firebaseService.matchesStream(completedOnly: _showCompletedOnly);
@@ -128,6 +135,7 @@ class GlobalMatchProvider with ChangeNotifier {
       print('DEBUG: GlobalMatchProvider - Received ${matches.length} inter-group matches');
       
       _allMatches = matches;
+      _needsReset = true; // Set flag to indicate we need to reset when returning to global matches
       
       // Sort matches by scheduledDate (most recent first)
       _allMatches.sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));

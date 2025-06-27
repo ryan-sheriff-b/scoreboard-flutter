@@ -22,9 +22,13 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
   @override
   void initState() {
     super.initState();
-    // The GlobalMatchProvider now automatically sets up a real-time stream
-    // in its constructor, so we don't need to call fetchAllMatches() here.
-    // The stream will provide real-time updates for all matches.
+    // When this screen initializes, always set up the stream for all matches
+    Future.microtask(() {
+      // Reset the provider to show all matches when returning to this screen
+      final provider = Provider.of<GlobalMatchProvider>(context, listen: false);
+      // Always set up the stream to ensure we have the latest matches
+      provider.setupMatchesStream();
+    });
   }
 
   String _getMatchStatusText(String status) {
@@ -263,21 +267,7 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
               Navigator.of(context).pushNamed(AppRoutes.interGroupMatchesList);
             },
           ),
-          Consumer<GlobalMatchProvider>(builder: (ctx, provider, _) {
-            return IconButton(
-              icon: Icon(
-                provider.showCompletedOnly
-                    ? Icons.filter_alt
-                    : Icons.filter_alt_outlined,
-              ),
-              tooltip: provider.showCompletedOnly
-                  ? 'Showing completed matches only'
-                  : 'Showing all matches',
-              onPressed: () {
-                provider.toggleCompletedOnly();
-              },
-            );
-          }),
+          // Filter button removed as requested
           // IconButton(
           //   icon: const Icon(Icons.refresh),
           //   onPressed: () {
@@ -314,11 +304,18 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
                 children: [
                   const Icon(Icons.sports_soccer, size: 64, color: Colors.grey),
                   const SizedBox(height: 16),
-                  Text(
-                    matchProvider.showCompletedOnly
-                        ? 'No completed matches found'
-                        : 'No matches found',
-                    style: const TextStyle(fontSize: 18),
+                  const Text(
+                    'No matches found',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Refresh Matches'),
+                    onPressed: () {
+                      // Force refresh the matches
+                      matchProvider.setupMatchesStream();
+                    },
                   ),
                 ],
               ),

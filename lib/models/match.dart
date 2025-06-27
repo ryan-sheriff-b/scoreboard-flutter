@@ -14,6 +14,21 @@ class Match {
   final DateTime scheduledDate;
   final DateTime? completedDate;
   final DateTime createdAt;
+  
+  // Factory method to create an empty match object for placeholder purposes
+  factory Match.empty() {
+    return Match(
+      id: -1,
+      groupId: -1,
+      team1Id: -1,
+      team2Id: -1,
+      team1Name: 'No matches',
+      team2Name: '',
+      status: 'none',
+      scheduledDate: DateTime.now(),
+      createdAt: DateTime.now(),
+    );
+  }
 
   Match({
     this.id,
