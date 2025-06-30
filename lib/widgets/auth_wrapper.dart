@@ -50,76 +50,82 @@ class AuthWrapper extends StatelessWidget {
 
   // Build the guest mode screen with options to view global matches, leaderboard, or login
   Widget _buildGuestModeScreen(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 100,
-        title: const Row(
+        title: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AppBarIcon(),
-            Spacer(),
+            AppBarIcon(size: screenWidth < 600 ? 80 : 150),
+            const Spacer(),
             Center(
-              child: Text('ScoreHub GameOn!'),
+              child: Text('ScoreHub GameOn!',
+                  style:
+                      TextStyle(fontSize: screenWidth < 600.0 ? 16.0 : 30.0)),
             ),
-            Spacer(),
-            SizedBox(height: 150,
-            width: 150,)
-
+            const Spacer(),
+            SizedBox(
+              height: screenWidth < 600 ? 80 : 150,
+              width: screenWidth < 600 ? 80 : 150,
+            )
           ],
         ),
       ),
       body: Stack(
-  children: [
-    // Main content
-    Center(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(AppImages.logo,width: 300),
-          const SizedBox(height: 50),
-          const Text(
-            'Welcome to the Scoreboard App',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
+          // Main content
+          Center(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(AppImages.logo, width: 300),
+                const SizedBox(height: 50),
+                const Text(
+                  'Welcome to the Scoreboard App',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.history),
+                  label: const Text('View Global Match History'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const GlobalMatchesScreen()),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.leaderboard),
+                  label: const Text('View Leaderboard'),
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppRoutes.leaderboard);
+                  },
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 20),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.history),
-            label: const Text('View Global Match History'),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const GlobalMatchesScreen()),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.leaderboard),
-            label: const Text('View Leaderboard'),
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.leaderboard);
-            },
+
+          // Bottom-right corner text
+          const Positioned(
+            bottom: 16,
+            right: 16,
+            child: Text(
+              'by flutter \u{1F499}',
+              style: TextStyle(fontFamily: 'sans-serif'),
+            ),
           ),
         ],
       ),
-    ),
-
-    // Bottom-right corner text
-    const Positioned(
-      bottom: 16,
-      right: 16,
-      child: Text(
-        'by flutter \u{1F499}',
-        style: TextStyle(fontFamily: 'sans-serif'),
-      ),
-    ),
-  ],
-),
-
     );
   }
 }

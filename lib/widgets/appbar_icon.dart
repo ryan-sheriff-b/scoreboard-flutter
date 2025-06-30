@@ -21,8 +21,8 @@ class AppBarIcon extends StatelessWidget {
     return Visibility(
     visible: visible,
       child:  Image.asset(AppImages.lightMakoLogo,
-            height: 150,
-            width: 150,
+            height: size,
+            width: size,
             // color:
             //     color ?? Theme.of(context).iconTheme.color, // apply color overlay
             

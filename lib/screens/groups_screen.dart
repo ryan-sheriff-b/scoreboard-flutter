@@ -208,22 +208,26 @@ class _GroupsScreenState extends State<GroupsScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    
+    final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 100,
-        title: const Row(
+        title: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AppBarIcon(),
-            Spacer(),
+            AppBarIcon(size: screenWidth < 600 ? 50 : 150),
+            const Spacer(),
             Center(
-              child: Text('Groups'),
+              child: Text('Groups',
+                  style:
+                      TextStyle(fontSize: screenWidth < 600.0 ? 16.0 : 30.0)),
             ),
-            Spacer(),
-            SizedBox(height: 150,
-            width: 150,)
+            const Spacer(),
+            SizedBox(
+              height: screenWidth < 600 ? 50 : 150,
+              width: screenWidth < 600 ? 50 : 150,
+            )
 
           ],
         ),

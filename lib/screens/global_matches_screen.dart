@@ -252,22 +252,26 @@ class _GlobalMatchesScreenState extends State<GlobalMatchesScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final bool isAuthenticated = authProvider.isAuthenticated;
-
+    final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 100,
-        title: const Row(
+        title: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AppBarIcon(),
-            Spacer(),
+            AppBarIcon(size: screenWidth < 600 ? 40 : 150),
+            const Spacer(),
             Center(
-              child: Text('Global Match History'),
+              child: Text('Global Match History',
+                  style:
+                      TextStyle(fontSize: screenWidth < 600.0 ? 16.0 : 30.0)),
             ),
-            Spacer(),
-            SizedBox(height: 150,
-            width: 150,)
+            const Spacer(),
+            // SizedBox(
+            //   height: screenWidth < 600 ? 40 : 150,
+            //   width: screenWidth < 600 ? 40 : 150,
+            // )
 
           ],
         ),
