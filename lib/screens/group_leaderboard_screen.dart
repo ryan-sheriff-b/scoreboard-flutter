@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scoreboard/providers/auth_provider.dart';
 import 'package:scoreboard/routes/routes.dart';
+import 'package:scoreboard/screens/groups_screen.dart';
 import 'package:scoreboard/widgets/appbar_icon.dart';
 import '../services/firebase_service.dart';
 import '../constants/ui_constants.dart';
@@ -23,7 +24,7 @@ class GroupLeaderboardScreen extends StatefulWidget {
 }
 
 class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen> {
- // Track which teams are expanded to show members and matches
+  // Track which teams are expanded to show members and matches
   Set<int> _expandedTeams = {};
 
   final FirebaseService _firebaseService = FirebaseService();
@@ -37,7 +38,7 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen> {
     _loadLeaderboard();
   }
 
-    Future<void> _loadTeamMatches(int teamId) async {
+  Future<void> _loadTeamMatches(int teamId) async {
     print('DEBUG: _loadTeamMatches called for team $teamId');
     print('DEBUG: Current _teamMatches state: ${_teamMatches.keys.toList()}');
 
@@ -106,7 +107,8 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen> {
     });
 
     try {
-      final teams = await _firebaseService.getAllTeamsWithScores(groupId: widget.groupId);
+      final teams =
+          await _firebaseService.getAllTeamsWithScores(groupId: widget.groupId);
       print(teams);
       setState(() {
         _teams = teams;
@@ -124,7 +126,7 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen> {
     }
   }
 
-    Widget _buildMatchItem(Match match, int teamId) {
+  Widget _buildMatchItem(Match match, int teamId) {
     // Handle empty match case
     if (match.id == -1) {
       return const SizedBox.shrink(); // Don't display empty matches
@@ -237,7 +239,6 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
 //     return Scaffold(
@@ -263,17 +264,17 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen> {
 //                       final team = _teams[index];
 //                       final rank = index + 1;
 //                       final isTopThree = rank <= 3;
-                      
+
 //                       final teamId = team['id'] as int;
 //                       final isExpanded = _expandedTeams.contains(teamId);
 //                       final List<Map<String, dynamic>> members = List<Map<String, dynamic>>.from(team['members'] ?? []);
-                      
+
 //                       return Column(
 //                         children: [
 //                           Card(
 //                             elevation: isTopThree ? 4 : 1,
 //                             margin: EdgeInsets.symmetric(
-//                               vertical: 4, 
+//                               vertical: 4,
 //                               horizontal: AppPadding.getListItemPadding(context).horizontal / 2
 //                             ),
 //                             color: isTopThree
@@ -387,9 +388,9 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen> {
 //                   ),
 //                 ),
 //     );
-final authProvider = Provider.of<AuthProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
     final bool isAuthenticated = authProvider.isAuthenticated;
-      return Scaffold(
+    return Scaffold(
       appBar: AppBar(
         toolbarHeight: 100,
         title: const Row(
@@ -402,9 +403,10 @@ final authProvider = Provider.of<AuthProvider>(context);
               child: Text('Global Leaderboard'),
             ),
             Spacer(),
-            SizedBox(height: 150,
-            width: 150,)
-
+            SizedBox(
+              height: 150,
+              width: 150,
+            )
           ],
         ),
         // title: const Text('Global Leaderboard'),
@@ -413,11 +415,10 @@ final authProvider = Provider.of<AuthProvider>(context);
             icon: const Icon(Icons.refresh),
             onPressed: _loadLeaderboard,
           ),
-          if (isAuthenticated)
             IconButton(
               icon: const Icon(Icons.exit_to_app),
               onPressed: () => authProvider.signOut(),
-            ),
+            )
         ],
       ),
       body: _isLoading
@@ -468,7 +469,6 @@ final authProvider = Provider.of<AuthProvider>(context);
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-             
                                   ListTile(
                                     contentPadding: const EdgeInsets.symmetric(
                                         horizontal: 16.0, vertical: 8.0),
@@ -693,7 +693,6 @@ final authProvider = Provider.of<AuthProvider>(context);
                                               }
                                             },
                                           ),
-
                                         ],
                                       ),
                                     ),
@@ -707,6 +706,5 @@ final authProvider = Provider.of<AuthProvider>(context);
                   ),
                 ),
     );
-  
   }
 }

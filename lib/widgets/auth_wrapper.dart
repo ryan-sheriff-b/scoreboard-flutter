@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scoreboard/constants/app_images.dart';
 import 'package:scoreboard/widgets/appbar_icon.dart';
 import '../providers/auth_provider.dart';
 import '../screens/login_screen.dart';
@@ -59,7 +60,7 @@ class AuthWrapper extends StatelessWidget {
             AppBarIcon(),
             Spacer(),
             Center(
-              child: Text('Scoreboard'),
+              child: Text('ScoreHub GameOn!'),
             ),
             Spacer(),
             SizedBox(height: 150,
@@ -73,8 +74,12 @@ class AuthWrapper extends StatelessWidget {
     // Main content
     Center(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          Image.asset(AppImages.logo,width: 300),
+          const SizedBox(height: 50),
           const Text(
             'Welcome to the Scoreboard App',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),

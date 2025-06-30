@@ -18,7 +18,19 @@ import 'providers/global_match_provider.dart';
 import 'routes/routes.dart';
 import 'widgets/auth_wrapper.dart';
 import 'screens/login_screen.dart';
-import 'constants/ui_constants.dart';
+import 'dart:html' as html;
+
+
+void checkForNewVersion() {
+  html.window.navigator.serviceWorker?.getRegistration().then((reg) {
+    reg?.update();
+  });
+
+  html.window.onBeforeUnload.listen((event) {
+    // Optional: Prompt or auto reload
+    html.window.location.reload();
+  });
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

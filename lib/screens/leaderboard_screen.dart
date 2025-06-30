@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:scoreboard/routes/routes.dart';
+import 'package:scoreboard/screens/groups_screen.dart';
 import 'package:scoreboard/widgets/appbar_icon.dart';
 import '../services/firebase_service.dart';
 import '../providers/auth_provider.dart';
@@ -268,6 +269,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             IconButton(
               icon: const Icon(Icons.exit_to_app),
               onPressed: () => authProvider.signOut(),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.group),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const GroupsScreen(),
+                  ),
+                );
+              },
             ),
         ],
       ),

@@ -266,21 +266,24 @@ class _GroupsScreenState extends State<GroupsScreen> {
               tooltip: 'Create Inter-Group Match',
             ),
           // Add button for viewing inter-group matches
-          IconButton(
-            icon: const Icon(Icons.compare_arrows),
-            onPressed: () => Navigator.of(context).pushNamed(AppRoutes.interGroupMatchesList),
-            tooltip: 'Inter-Group Matches',
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await authProvider.signOut();
-              if (mounted) {
-                Navigator.of(context).pushReplacementNamed(AppRoutes.login);
-              }
-            },
-            tooltip: 'Sign Out',
-          ),
+          if(authProvider.isAuthenticated)
+              IconButton(
+                icon: const Icon(Icons.compare_arrows),
+                onPressed: () => Navigator.of(context).pushNamed(AppRoutes.interGroupMatchesList),
+                tooltip: 'Inter-Group Matches',
+              ),
+          if(authProvider.isAuthenticated)
+
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () async {
+                  await authProvider.signOut();
+                  if (mounted) {
+                    Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+                  }
+                },
+                tooltip: 'Sign Out',
+              ),
         ],
       ),
       body: Consumer<GroupProvider>(

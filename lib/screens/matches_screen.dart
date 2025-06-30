@@ -545,6 +545,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                       ),
                     ),
                     // Allow all users to create matches, not just admins
+                    if(AuthProvider().isAuthenticated)
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: ElevatedButton(
