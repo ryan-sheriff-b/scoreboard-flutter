@@ -33,7 +33,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
   String _selectedMatchType = 'regular';
   DateTime _scheduledDate = DateTime.now();
   int? _currentGroupId;
-  
+
   // Match type options
   final List<Map<String, dynamic>> _matchTypes = [
     {'value': 'regular', 'label': 'Regular Match'},
@@ -47,28 +47,30 @@ class _MatchesScreenState extends State<MatchesScreen> {
     super.initState();
     Future.microtask(() async {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
+
       // Refresh admin status from Firestore
       await authProvider.refreshAdminStatus();
-      
+
       setState(() {
         _isAdmin = authProvider.isAdmin;
         _currentGroupId = widget.group.id!;
       });
-      
+
       // Set current group for providers
-      Provider.of<TeamProvider>(context, listen: false).setCurrentGroup(widget.group.id!);
-      Provider.of<MatchProvider>(context, listen: false).setCurrentGroup(widget.group.id!);
-      
+      Provider.of<TeamProvider>(context, listen: false)
+          .setCurrentGroup(widget.group.id!);
+      Provider.of<MatchProvider>(context, listen: false)
+          .setCurrentGroup(widget.group.id!);
+
       // Load teams for dropdowns
       await _loadTeams();
-      
+
       setState(() {
         _isLoading = false;
       });
     });
   }
-  
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -109,7 +111,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
         );
       },
     );
-    
+
     if (pickedDate != null) {
       // Then, select the time
       final TimeOfDay? pickedTime = await showTimePicker(
@@ -128,7 +130,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
           );
         },
       );
-      
+
       if (pickedTime != null) {
         // Combine date and time
         setState(() {
@@ -157,14 +159,16 @@ class _MatchesScreenState extends State<MatchesScreen> {
   }
 
   Future<void> _createMatch() async {
-    if (_formKey.currentState!.validate() && _selectedTeam1 != null && _selectedTeam2 != null) {
+    if (_formKey.currentState!.validate() &&
+        _selectedTeam1 != null &&
+        _selectedTeam2 != null) {
       if (_selectedTeam1!.id == _selectedTeam2!.id) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Teams must be different')),
         );
         return;
       }
-      
+
       try {
         // Use the current scheduled date
         final match = Match(
@@ -178,12 +182,14 @@ class _MatchesScreenState extends State<MatchesScreen> {
           team2Name: _selectedTeam2!.name,
           status: 'scheduled',
           matchType: _selectedMatchType,
-          scheduledDate: _scheduledDate, // Use _scheduledDate which is updated in the dialog
+          scheduledDate:
+              _scheduledDate, // Use _scheduledDate which is updated in the dialog
           createdAt: DateTime.now(),
         );
-        
-        await Provider.of<MatchProvider>(context, listen: false).addMatch(match);
-        
+
+        await Provider.of<MatchProvider>(context, listen: false)
+            .addMatch(match);
+
         // Reset form
         setState(() {
           _selectedTeam1 = null;
@@ -191,9 +197,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
           _selectedMatchType = 'regular';
           _scheduledDate = DateTime.now();
         });
-        
+
         Navigator.of(context).pop();
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Match created successfully')),
         );
@@ -208,7 +214,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
   void _showCreateMatchDialog() {
     // Create a local copy of the scheduled date for the dialog
     DateTime dialogScheduledDate = _scheduledDate;
-    
+
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -266,7 +272,8 @@ class _MatchesScreenState extends State<MatchesScreen> {
                     ),
                     SizedBox(height: AppPadding.smallSpacing * 2),
                     DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(labelText: 'Match Type'),
+                      decoration:
+                          const InputDecoration(labelText: 'Match Type'),
                       value: _selectedMatchType,
                       items: _matchTypes.map((type) {
                         return DropdownMenuItem<String>(
@@ -284,7 +291,8 @@ class _MatchesScreenState extends State<MatchesScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Scheduled Date & Time', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text('Scheduled Date & Time',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                         SizedBox(height: AppPadding.smallSpacing),
                         InkWell(
                           onTap: () async {
@@ -300,33 +308,37 @@ class _MatchesScreenState extends State<MatchesScreen> {
                                 return Theme(
                                   data: Theme.of(context).copyWith(
                                     datePickerTheme: DatePickerThemeData(
-                                      headerHelpStyle: const TextStyle(fontSize: 16),
+                                      headerHelpStyle:
+                                          const TextStyle(fontSize: 16),
                                     ),
                                   ),
                                   child: child!,
                                 );
                               },
                             );
-                            
+
                             if (pickedDate != null) {
                               // Then, select the time
-                              final TimeOfDay? pickedTime = await showTimePicker(
+                              final TimeOfDay? pickedTime =
+                                  await showTimePicker(
                                 context: context,
-                                initialTime: TimeOfDay.fromDateTime(dialogScheduledDate),
+                                initialTime:
+                                    TimeOfDay.fromDateTime(dialogScheduledDate),
                                 helpText: 'SELECT MATCH TIME',
                                 confirmText: 'CONFIRM',
                                 builder: (context, child) {
                                   return Theme(
                                     data: Theme.of(context).copyWith(
                                       timePickerTheme: TimePickerThemeData(
-                                        helpTextStyle: const TextStyle(fontSize: 16),
+                                        helpTextStyle:
+                                            const TextStyle(fontSize: 16),
                                       ),
                                     ),
                                     child: child!,
                                   );
                                 },
                               );
-                              
+
                               if (pickedTime != null) {
                                 // Update the dialog state with the new date and time
                                 setDialogState(() {
@@ -338,7 +350,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                                     pickedTime.minute,
                                   );
                                 });
-                                
+
                                 // Also update the parent state
                                 setState(() {
                                   _scheduledDate = dialogScheduledDate;
@@ -356,9 +368,12 @@ class _MatchesScreenState extends State<MatchesScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  DateFormat('dd/MM/yyyy hh:mm a').format(dialogScheduledDate),
+                                  DateFormat('dd/MM/yyyy hh:mm a')
+                                      .format(dialogScheduledDate),
                                 ),
-                                const Text('(Tap to change)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                const Text('(Tap to change)',
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.grey)),
                               ],
                             ),
                           ),
@@ -438,7 +453,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
           : Consumer<MatchProvider>(
               builder: (ctx, matchProvider, _) {
                 final matches = matchProvider.matches;
-                
+
                 if (matches.isEmpty) {
                   return Center(
                     child: Column(
@@ -458,7 +473,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                     ),
                   );
                 }
-                
+
                 return Column(
                   children: [
                     Expanded(
@@ -475,26 +490,30 @@ class _MatchesScreenState extends State<MatchesScreen> {
                                     child: Text(
                                       match.team1Name,
                                       textAlign: TextAlign.end,
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: Colors.grey[200],
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
                                       '${match.team1Score} - ${match.team2Score}',
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
                                       match.team2Name,
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ],
@@ -512,19 +531,26 @@ class _MatchesScreenState extends State<MatchesScreen> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        DateFormat('dd/MM/yyyy hh:mm a').format(match.scheduledDate),
-                                        style: TextStyle(color: Colors.grey[600]),
+                                        DateFormat('dd/MM/yyyy hh:mm a')
+                                            .format(match.scheduledDate),
+                                        style:
+                                            TextStyle(color: Colors.grey[600]),
                                       ),
                                       const Spacer(),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: _getMatchStatusColor(match.status),
-                                          borderRadius: BorderRadius.circular(12),
+                                          color: _getMatchStatusColor(
+                                              match.status),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                         ),
                                         child: Text(
                                           _getMatchStatusText(match.status),
-                                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12),
                                         ),
                                       ),
                                     ],
@@ -545,17 +571,22 @@ class _MatchesScreenState extends State<MatchesScreen> {
                       ),
                     ),
                     // Allow all users to create matches, not just admins
-                    if(AuthProvider().isAuthenticated)
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: ElevatedButton(
-                        onPressed: _showCreateMatchDialog,
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size.fromHeight(50),
+                    Consumer<AuthProvider>(builder: (ctx, provider, child) {
+                      if (!provider.isAdmin) {
+                        return const SizedBox
+                            .shrink(); // Return an empty widget instead of null
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: ElevatedButton(
+                          onPressed: _showCreateMatchDialog,
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(50),
+                          ),
+                          child: const Text('Create New Match'),
                         ),
-                        child: const Text('Create New Match'),
-                      ),
-                    ),
+                      );
+                    }),
                   ],
                 );
               },
