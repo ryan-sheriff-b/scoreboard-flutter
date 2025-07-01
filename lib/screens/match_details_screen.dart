@@ -355,14 +355,14 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AppBarIcon(),
+            // AppBarIcon(),
             Spacer(),
             Center(
               child: Text('Match Details'),
             ),
             Spacer(),
-            SizedBox(height: 150,
-            width: 150,)
+            // SizedBox(height: 150,
+            // width: 150,)
 
           ],
         ),
